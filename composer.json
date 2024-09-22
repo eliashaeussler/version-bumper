@@ -1,0 +1,81 @@
+{
+	"name": "eliashaeussler/version-bumper",
+	"description": "Composer plugin to bump project versions during release preparations",
+	"license": "GPL-3.0-or-later",
+	"type": "composer-plugin",
+	"authors": [
+		{
+			"name": "Elias Häußler",
+			"email": "elias@haeussler.dev",
+			"homepage": "https://haeussler.dev",
+			"role": "Maintainer"
+		}
+	],
+	"require": {
+		"php": "~8.1.0 || ~8.2.0 || ~8.3.0",
+		"composer-plugin-api": "^2.0",
+		"cuyz/valinor": "^1.13",
+		"symfony/filesystem": "^6.4 || ^7.0",
+		"symfony/yaml": "^6.4 || ^7.0"
+	},
+	"require-dev": {
+		"armin/editorconfig-cli": "^1.8 || ^2.0",
+		"composer/composer": "^2.0",
+		"eliashaeussler/php-cs-fixer-config": "^2.0",
+		"eliashaeussler/phpstan-config": "^2.0",
+		"eliashaeussler/rector-config": "^3.0",
+		"ergebnis/composer-normalize": "^2.30",
+		"phpstan/extension-installer": "^1.2",
+		"phpstan/phpstan-phpunit": "^1.1",
+		"phpstan/phpstan-symfony": "^1.4",
+		"phpunit/phpunit": "^10.2"
+	},
+	"autoload": {
+		"psr-4": {
+			"EliasHaeussler\\VersionBumper\\": "src/"
+		}
+	},
+	"autoload-dev": {
+		"psr-4": {
+			"EliasHaeussler\\VersionBumper\\Tests\\": "tests/src/"
+		}
+	},
+	"config": {
+		"allow-plugins": {
+			"ergebnis/composer-normalize": true,
+			"phpstan/extension-installer": true
+		},
+		"sort-packages": true
+	},
+	"extra": {
+		"class": "EliasHaeussler\\VersionBumper\\VersionBumperPlugin"
+	},
+	"scripts": {
+		"fix": [
+			"@fix:composer",
+			"@fix:editorconfig",
+			"@fix:php"
+		],
+		"fix:composer": "@composer normalize",
+		"fix:editorconfig": "@lint:editorconfig --fix",
+		"fix:php": "php-cs-fixer fix",
+		"lint": [
+			"@lint:composer",
+			"@lint:editorconfig",
+			"@lint:php"
+		],
+		"lint:composer": "@fix:composer --dry-run",
+		"lint:editorconfig": "ec",
+		"lint:php": "@fix:php --dry-run",
+		"migration": [
+			"@migration:rector"
+		],
+		"migration:rector": "rector process -c rector.php",
+		"sca": [
+			"@sca:php"
+		],
+		"sca:php": "phpstan analyse -c phpstan.php",
+		"test": "@test:coverage --no-coverage",
+		"test:coverage": "phpunit -c phpunit.xml"
+	}
+}
