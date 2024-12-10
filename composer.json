@@ -28,8 +28,8 @@
 		"eliashaeussler/rector-config": "^3.0",
 		"ergebnis/composer-normalize": "^2.30",
 		"phpstan/extension-installer": "^1.2",
-		"phpstan/phpstan-phpunit": "^1.1",
-		"phpstan/phpstan-symfony": "^1.4",
+		"phpstan/phpstan-phpunit": "^2.0",
+		"phpstan/phpstan-symfony": "^2.0",
 		"phpunit/phpunit": "^10.2 || ^11.0"
 	},
 	"autoload": {
