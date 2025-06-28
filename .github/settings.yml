@@ -100,14 +100,6 @@ rulesets:
               integration_id: 15368
             - context: 'Tests (PHP 8.3, Composer 2.2 & lowest dependencies)'
               integration_id: 15368
-            - context: 'Tests (PHP 8.2, Composer 2.3 & highest dependencies)'
-              integration_id: 15368
-            - context: 'Tests (PHP 8.2, Composer 2.3 & lowest dependencies)'
-              integration_id: 15368
-            - context: 'Tests (PHP 8.3, Composer 2.3 & highest dependencies)'
-              integration_id: 15368
-            - context: 'Tests (PHP 8.3, Composer 2.3 & lowest dependencies)'
-              integration_id: 15368
             - context: 'Tests (PHP 8.2, Composer 2.4 & highest dependencies)'
               integration_id: 15368
             - context: 'Tests (PHP 8.2, Composer 2.4 & lowest dependencies)'
