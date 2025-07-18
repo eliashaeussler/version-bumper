@@ -16,7 +16,7 @@ Preset for Composer packages managed by a `composer.json` file.
 
 | Option | Type   | Required | Description                                                                |
 |--------|--------|----------|----------------------------------------------------------------------------|
-| `path` | String | –        | Directory where `composer.json` is located, defaults to current directory. |
+| `path` | String | –        | Directory where `composer.json` is located, defaults to the current directory. |
 
 ### Conventional Commits (`conventional-commits`)
 
@@ -31,7 +31,7 @@ Preset for NPM packages managed by a `package.json` file.
 | Option        | Type   | Required       | Description                                                               |
 |---------------|--------|----------------|---------------------------------------------------------------------------|
 | `packageName` | String | –<sup>1)</sup> | Name of the package as configured in `package.json`.                      |
-| `path`        | String | –              | Directory where `package.json` is located, defaults to current directory. |
+| `path`        | String | –              | Directory where `package.json` is located, defaults to the current directory. |
 
 <sup>1)</sup> When omitted, the package name is automatically resolved
 from the given `package.json` file.

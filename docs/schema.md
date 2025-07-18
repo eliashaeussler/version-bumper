@@ -71,7 +71,7 @@ preset identifier only) or using object syntax (provide identifier and options).
 |---------------------------------------|---------|----------|-------------------------------------------------------------------------------------------------------------------------------------|
 | `releaseOptions`                      | Object  | –        | Set of configuration options to respect when a new release is created (using the `--release` command option).                       |
 | `releaseOptions.commitMessage`        | String  | –        | Commit message pattern to use for new releases. May contain a `{%version%}` placeholder that is replaced by the version to release. |
-| `releaseOptions.overwriteExistingTag` | Boolean | –        | Overwrite an probably existing tag by deleting it before a new tag is created.                                                      |
+| `releaseOptions.overwriteExistingTag` | Boolean | –        | Overwrite an existing tag by deleting it before a new tag is created.                                                               |
 | `releaseOptions.signTag`              | Boolean | –        | Use Git's `-s` command option to sign the new tag using the Git-configured signing key.                                             |
 | `releaseOptions.tagName`              | String  | –        | Tag name pattern to use for new releases. Must contain a `{%version%}` placeholder that is replaced by the version to release.      |
 

@@ -25,7 +25,7 @@ or one of:
 
 ## `-c|--config`
 
-Path to [config file](config-file), defaults to auto-detection in
+Path to [config file](config-file), defaults to auto-detection in the
 current working directory, can be
 [configured in `composer.json`](config-file#configuration-in-composerjson)
 as well.

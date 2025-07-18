@@ -49,7 +49,7 @@ return new VersionBumper\Config\VersionBumperConfig(
 
 ## Configuration in `composer.json`
 
-The config file path can be passed as `-c`/`--config` command
+The config file path can be passed as a `-c`/`--config` command
 option or, alternatively, as configuration in `composer.json`:
 
 ```json
@@ -62,7 +62,7 @@ option or, alternatively, as configuration in `composer.json`:
 }
 ```
 
-When configured as relative path, the config file path is
+When configured as a relative path, the config file path is
 calculated based on the location of the `composer.json` file.
 
 ## Auto-detection
