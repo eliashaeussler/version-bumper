@@ -1,6 +1,6 @@
 <div align="center">
 
-# Version Bumper
+# Version Bumper!
 
 [![Coverage](https://img.shields.io/coverallsCoverage/github/eliashaeussler/version-bumper?logo=coveralls)](https://coveralls.io/github/eliashaeussler/version-bumper)
 [![Maintainability](https://img.shields.io/codeclimate/maintainability/eliashaeussler/version-bumper?logo=codeclimate)](https://codeclimate.com/github/eliashaeussler/version-bumper/maintainability)
