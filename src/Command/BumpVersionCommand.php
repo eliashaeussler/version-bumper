@@ -309,8 +309,8 @@ final class BumpVersionCommand extends Command\BaseCommand
                 $message = match ($state) {
                     Enum\OperationState::Modified => sprintf(
                         '✅ Bumped version from "%s" to "%s"',
-                        $operation->source()?->full(),
-                        $operation->target()?->full(),
+                        $operation->source()?->full() ?? '',
+                        $operation->target()?->full() ?? '',
                     ),
                     Enum\OperationState::Skipped => '⏩ Skipped file due to unmodified contents',
                     Enum\OperationState::Unmatched => '❓ Unmatched file pattern: '.$operation->pattern()->original(),
@@ -331,13 +331,13 @@ final class BumpVersionCommand extends Command\BaseCommand
         $releaseInformation = [
             sprintf('Added %d file%s.', $numberOfCommittedFiles, 1 !== $numberOfCommittedFiles ? 's' : ''),
             sprintf('Committed: <info>%s</info>', $result->commitMessage()),
-            sprintf('Commit hash: %s', $result->commitId()),
-            sprintf('Tagged: <info>%s</info>', $result->tagName()),
         ];
 
-        if (null === $result->commitId()) {
-            unset($releaseInformation[2]);
+        if (null !== $result->commitId()) {
+            $releaseInformation[] = sprintf('Commit hash: %s', $result->commitId());
         }
+
+        $releaseInformation[] = sprintf('Tagged: <info>%s</info>', $result->tagName());
 
         $this->io->listing($releaseInformation);
     }

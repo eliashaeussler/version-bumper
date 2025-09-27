@@ -27,7 +27,6 @@ use EliasHaeussler\VersionBumper\Config;
 use EliasHaeussler\VersionBumper\Enum;
 
 use function array_values;
-use function sprintf;
 
 /**
  * VersionBumpResult.
@@ -71,13 +70,12 @@ final readonly class VersionBumpResult
         $operations = [];
 
         foreach ($this->operations as $operation) {
-            $identifier = sprintf(
-                '%s_%s_%s_%s',
+            $identifier = implode('_', [
                 $operation->source()?->full(),
                 $operation->target()?->full(),
                 $operation->state()->name,
                 Enum\OperationState::Unmatched === $operation->state() ? $operation->pattern()->original() : '',
-            );
+            ]);
 
             if (!isset($operations[$identifier])) {
                 $operations[$identifier] = [];
