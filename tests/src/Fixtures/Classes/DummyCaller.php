@@ -68,7 +68,7 @@ final class DummyCaller extends Command\Caller\AbstractCaller
         }
 
         $this->rawOutput = $outputOrException;
-        $this->outputLines = array_map('rtrim', explode(PHP_EOL, $outputOrException));
+        $this->outputLines = array_map(rtrim(...), explode(PHP_EOL, $outputOrException));
 
         return $this;
     }

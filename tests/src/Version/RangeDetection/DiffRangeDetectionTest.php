@@ -69,7 +69,7 @@ final class DiffRangeDetectionTest extends Framework\TestCase
         );
 
         $diff = (string) file_get_contents(dirname(__DIR__, 2).'/Fixtures/Git/diff-tag-deleted.txt');
-        $lines = array_map('rtrim', explode(PHP_EOL, $diff));
+        $lines = array_map(rtrim(...), explode(PHP_EOL, $diff));
 
         $this->diff[] = new Objects\Diff\DiffObject($lines);
 
@@ -85,7 +85,7 @@ final class DiffRangeDetectionTest extends Framework\TestCase
         );
 
         $diff = (string) file_get_contents(dirname(__DIR__, 2).'/Fixtures/Git/diff-tag-added.txt');
-        $lines = array_map('rtrim', explode(PHP_EOL, $diff));
+        $lines = array_map(rtrim(...), explode(PHP_EOL, $diff));
 
         $this->diff[] = new Objects\Diff\DiffObject($lines);
 
@@ -101,7 +101,7 @@ final class DiffRangeDetectionTest extends Framework\TestCase
         );
 
         $diff = (string) file_get_contents(dirname(__DIR__, 2).'/Fixtures/Git/diff-tag-added.txt');
-        $lines = array_map('rtrim', explode(PHP_EOL, $diff));
+        $lines = array_map(rtrim(...), explode(PHP_EOL, $diff));
 
         $this->diff[] = new Objects\Diff\DiffObject($lines);
 
@@ -128,7 +128,7 @@ final class DiffRangeDetectionTest extends Framework\TestCase
         );
 
         $diff = (string) file_get_contents(dirname(__DIR__, 2).'/Fixtures/Git/diff-tag-deleted.txt');
-        $lines = array_map('rtrim', explode(PHP_EOL, $diff));
+        $lines = array_map(rtrim(...), explode(PHP_EOL, $diff));
 
         $this->diff[] = new Objects\Diff\DiffObject($lines);
 
@@ -144,7 +144,7 @@ final class DiffRangeDetectionTest extends Framework\TestCase
         );
 
         $diff = (string) file_get_contents(dirname(__DIR__, 2).'/Fixtures/Git/diff-tag-added.txt');
-        $lines = array_map('rtrim', explode(PHP_EOL, $diff));
+        $lines = array_map(rtrim(...), explode(PHP_EOL, $diff));
 
         $this->diff[] = new Objects\Diff\DiffObject($lines);
 
