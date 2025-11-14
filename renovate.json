@@ -1,7 +1,8 @@
 {
 	"$schema": "https://docs.renovatebot.com/renovate-schema.json",
 	"extends": [
-		"local>eliashaeussler/renovate-config"
+		"local>eliashaeussler/renovate-config",
+		"local>eliashaeussler/renovate-config:composer-plugin"
 	],
 	"constraints": {
 		"php": "8.2.*"
