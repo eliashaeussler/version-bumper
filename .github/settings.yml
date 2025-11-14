@@ -168,6 +168,18 @@ rulesets:
               integration_id: 15368
             - context: 'Tests (PHP 8.4, Composer 2.8 & lowest dependencies)'
               integration_id: 15368
+            - context: 'Tests (PHP 8.2, Composer 2.9 & highest dependencies)'
+              integration_id: 15368
+            - context: 'Tests (PHP 8.2, Composer 2.9 & lowest dependencies)'
+              integration_id: 15368
+            - context: 'Tests (PHP 8.3, Composer 2.9 & highest dependencies)'
+              integration_id: 15368
+            - context: 'Tests (PHP 8.3, Composer 2.9 & lowest dependencies)'
+              integration_id: 15368
+            - context: 'Tests (PHP 8.4, Composer 2.9 & highest dependencies)'
+              integration_id: 15368
+            - context: 'Tests (PHP 8.4, Composer 2.9 & lowest dependencies)'
+              integration_id: 15368
             - context: 'Test coverage'
               integration_id: 15368
     bypass_actors:
