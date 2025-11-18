@@ -3,7 +3,6 @@
 # Version Bumper
 
 [![Coverage](https://img.shields.io/coverallsCoverage/github/eliashaeussler/version-bumper?logo=coveralls)](https://coveralls.io/github/eliashaeussler/version-bumper)
-[![Maintainability](https://img.shields.io/codeclimate/maintainability/eliashaeussler/version-bumper?logo=codeclimate)](https://codeclimate.com/github/eliashaeussler/version-bumper/maintainability)
 [![CGL](https://img.shields.io/github/actions/workflow/status/eliashaeussler/version-bumper/cgl.yaml?label=cgl&logo=github)](https://github.com/eliashaeussler/version-bumper/actions/workflows/cgl.yaml)
 [![Tests](https://img.shields.io/github/actions/workflow/status/eliashaeussler/version-bumper/tests.yaml?label=tests&logo=github)](https://github.com/eliashaeussler/version-bumper/actions/workflows/tests.yaml)
 [![Supported PHP Versions](https://img.shields.io/packagist/dependency-v/eliashaeussler/version-bumper/php?logo=php)](https://packagist.org/packages/eliashaeussler/version-bumper)
