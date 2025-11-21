@@ -25,7 +25,7 @@
 		"armin/editorconfig-cli": "^2.0",
 		"composer/composer": "^2.2",
 		"eliashaeussler/php-cs-fixer-config": "^3.0",
-		"eliashaeussler/phpstan-config": "^2.9",
+		"eliashaeussler/phpstan-config": "^3.0",
 		"eliashaeussler/rector-config": "^3.1",
 		"ergebnis/composer-normalize": "^2.47",
 		"phpstan/extension-installer": "^1.3",
