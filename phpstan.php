@@ -23,10 +23,6 @@ declare(strict_types=1);
 
 use EliasHaeussler\PHPStanConfig;
 
-$symfonySet = PHPStanConfig\Set\SymfonySet::create()
-    ->withConsoleApplicationLoader('tests/build/console-application.php')
-;
-
 return PHPStanConfig\Config\Config::create(__DIR__)
     ->in(
         'src',
@@ -34,7 +30,9 @@ return PHPStanConfig\Config\Config::create(__DIR__)
     )
     ->withBaseline()
     ->withBleedingEdge()
-    ->withSets($symfonySet)
+    ->withSet(static function (PHPStanConfig\Set\SymfonySet $set) {
+        $set->withConsoleApplicationLoader('tests/build/console-application.php');
+    })
     ->maxLevel()
     ->toArray()
 ;
