@@ -25,6 +25,8 @@ use EliasHaeussler\VersionBumper\Command;
 use Symfony\Component\Console;
 
 $application = new Console\Application();
-$application->add(new Command\BumpVersionCommand());
+$application->addCommands([
+    new Command\BumpVersionCommand(),
+]);
 
 return $application;
