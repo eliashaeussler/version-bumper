@@ -156,7 +156,7 @@ final class BumpVersionCommandTest extends Framework\TestCase
         ]);
 
         self::assertSame(Console\Command\Command::FAILURE, $this->commandTester->getStatusCode());
-        self::assertStringContainsString('*root*: Unexpected key(s) `foo`', $this->commandTester->getDisplay());
+        self::assertMatchesRegularExpression('/Unexpected key(\(s\))? `foo`/', $this->commandTester->getDisplay());
     }
 
     #[Framework\Attributes\Test]

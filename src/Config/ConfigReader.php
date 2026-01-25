@@ -126,7 +126,7 @@ final readonly class ConfigReader
 
         $config = $returnValue();
 
-        if (!($config instanceof VersionBumperConfig)) {
+        if (!$config instanceof VersionBumperConfig) {
             throw new Exception\ConfigFileIsInvalid($file);
         }
 
