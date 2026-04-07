@@ -57,6 +57,14 @@ final class Typo3ExtensionPreset extends BasePreset
                 ],
                 true,
             ),
+            // https://docs.typo3.org/c/typo3/cms-core/main/en-us/Changelog/14.2/Feature-108345-No-ext-em-conf-in-classic-mode.html#extension-version
+            new Config\FileToModify(
+                'composer.json',
+                [
+                    new Config\FilePattern('"version": "{%version%}"'),
+                ],
+                true,
+            ),
         ];
 
         // New PHP-based documentation rendering
