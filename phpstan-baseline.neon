@@ -16,6 +16,12 @@ parameters:
 			path: src/Command/BumpVersionCommand.php
 
 		-
+			rawMessage: Foreach overwrites $result with its value variable.
+			identifier: foreach.valueOverwrite
+			count: 1
+			path: src/Command/BumpVersionCommand.php
+
+		-
 			rawMessage: 'Parameter #1 ...$constructors of method CuyZ\Valinor\MapperBuilder::registerConstructor() expects (pure-callable(): mixed)|class-string, Closure(string, array<string, mixed>=): EliasHaeussler\VersionBumper\Config\Preset\Preset given.'
 			identifier: argument.type
 			count: 1

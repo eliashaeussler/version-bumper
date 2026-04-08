@@ -32,6 +32,10 @@ jobs:
             composer-version: "2.2"
           - php-version: "8.5"
             composer-version: "2.3"
+        include:
+          # Circumvent incompatibilities with Composer 2.6 and Symfony >= 7
+          - composer-version: "2.6"
+            composer-options: "--with=symfony/console:<7"
     steps:
       - uses: actions/checkout@v6
         with:
@@ -50,7 +54,7 @@ jobs:
         uses: ramsey/composer-install@v3
         with:
           dependency-versions: ${{ matrix.dependencies }}
-          composer-options: '--with=composer/composer:~${{ matrix.composer-version }}.0'
+          composer-options: '--with=composer/composer:~${{ matrix.composer-version }}.0 ${{ matrix.composer-options }}'
 
       # Run tests
       - name: Run tests

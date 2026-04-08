@@ -1,4 +1,6 @@
-/.build/
-/vendor/
+/.build
+/tests/src/Fixtures/RootPath/vendor
+/tests/src/Fixtures/RootPathTemp
+/vendor
 /.php-cs-fixer.cache
 /.phpunit.result.cache
