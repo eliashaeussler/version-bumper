@@ -1,28 +1,28 @@
 parameters:
 	ignoreErrors:
 		-
-			message: '''
-				#^Call to deprecated method getComposer\(\) of class Composer\\Command\\BaseCommand\:
-				since Composer 2\.3\.0 use requireComposer or tryComposer depending on whether you have \$required set to true or false$#
+			rawMessage: '''
+				Call to deprecated method getComposer() of class Composer\Command\BaseCommand:
+				since Composer 2.3.0 use requireComposer or tryComposer depending on whether you have $required set to true or false
 			'''
 			identifier: method.deprecated
 			count: 1
 			path: src/Command/BumpVersionCommand.php
 
 		-
-			message: '#^Call to function method_exists\(\) with \$this\(EliasHaeussler\\VersionBumper\\Command\\BumpVersionCommand\) and ''tryComposer'' will always evaluate to true\.$#'
+			rawMessage: 'Call to function method_exists() with $this(EliasHaeussler\VersionBumper\Command\BumpVersionCommand) and ''tryComposer'' will always evaluate to true.'
 			identifier: function.alreadyNarrowedType
 			count: 1
 			path: src/Command/BumpVersionCommand.php
 
 		-
-			message: '#^Parameter \#1 \.\.\.\$constructors of method CuyZ\\Valinor\\MapperBuilder\:\:registerConstructor\(\) expects \(pure\-callable\(\)\: mixed\)\|class\-string, Closure\(string, array\<string, mixed\>\=\)\: EliasHaeussler\\VersionBumper\\Config\\Preset\\Preset given\.$#'
+			rawMessage: 'Parameter #1 ...$constructors of method CuyZ\Valinor\MapperBuilder::registerConstructor() expects (pure-callable(): mixed)|class-string, Closure(string, array<string, mixed>=): EliasHaeussler\VersionBumper\Config\Preset\Preset given.'
 			identifier: argument.type
 			count: 1
 			path: src/Config/ConfigReader.php
 
 		-
-			message: '#^Parameter \#2 \.\.\.\$constructors of method CuyZ\\Valinor\\MapperBuilder\:\:registerConstructor\(\) expects \(pure\-callable\(\)\: mixed\)\|class\-string, Closure\(string\)\: EliasHaeussler\\VersionBumper\\Config\\Preset\\Preset given\.$#'
+			rawMessage: 'Parameter #2 ...$constructors of method CuyZ\Valinor\MapperBuilder::registerConstructor() expects (pure-callable(): mixed)|class-string, Closure(string): EliasHaeussler\VersionBumper\Config\Preset\Preset given.'
 			identifier: argument.type
 			count: 1
 			path: src/Config/ConfigReader.php
