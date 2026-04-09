@@ -37,6 +37,7 @@ use EliasHaeussler\VersionBumper\Version;
 final readonly class WriteOperation
 {
     /**
+     * @throws Exception\FilePatternIsMissing
      * @throws Exception\SourceVersionIsMissing
      * @throws Exception\TargetVersionIsMissing
      * @throws Exception\VersionBumpResultIsMissing
@@ -45,7 +46,7 @@ final readonly class WriteOperation
         private ?Version\Version $source,
         private ?Version\Version $target,
         private ?string $result,
-        private Config\FilePattern $pattern,
+        private ?Config\FilePattern $pattern,
         private Enum\OperationState $state,
     ) {
         $this->validate();
@@ -54,6 +55,11 @@ final readonly class WriteOperation
     public static function unmatched(Config\FilePattern $pattern): self
     {
         return new self(null, null, null, $pattern, Enum\OperationState::Unmatched);
+    }
+
+    public static function regenerated(): self
+    {
+        return new self(null, null, null, null, Enum\OperationState::Regenerated);
     }
 
     public function source(): ?Version\Version
@@ -71,7 +77,7 @@ final readonly class WriteOperation
         return $this->result;
     }
 
-    public function pattern(): Config\FilePattern
+    public function pattern(): ?Config\FilePattern
     {
         return $this->pattern;
     }
@@ -80,10 +86,11 @@ final readonly class WriteOperation
      * @phpstan-assert-if-true !null $this->source()
      * @phpstan-assert-if-true !null $this->target()
      * @phpstan-assert-if-true !null $this->result()
+     * @phpstan-assert-if-true !null $this->pattern()
      */
     public function matched(): bool
     {
-        return Enum\OperationState::Unmatched !== $this->state;
+        return $this->state->matched();
     }
 
     public function state(): Enum\OperationState
@@ -92,13 +99,14 @@ final readonly class WriteOperation
     }
 
     /**
+     * @throws Exception\FilePatternIsMissing
      * @throws Exception\SourceVersionIsMissing
      * @throws Exception\TargetVersionIsMissing
      * @throws Exception\VersionBumpResultIsMissing
      */
     private function validate(): void
     {
-        if (Enum\OperationState::Unmatched === $this->state) {
+        if (!$this->state->matched()) {
             return;
         }
 
@@ -110,6 +118,9 @@ final readonly class WriteOperation
         }
         if (null === $this->result) {
             throw new Exception\VersionBumpResultIsMissing();
+        }
+        if (null === $this->pattern) {
+            throw new Exception\FilePatternIsMissing();
         }
     }
 }

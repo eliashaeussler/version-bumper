@@ -16,9 +16,11 @@
 		"composer-plugin-api": "^2.0",
 		"cuyz/valinor": "^2.0",
 		"cypresslab/gitelephant": "^4.5",
+		"eliashaeussler/task-runner": "^1.2",
 		"symfony/console": "^5.4 || ^6.4 || ^7.0 || ^8.0",
 		"symfony/filesystem": "^5.4 || ^6.4 || ^7.0 || ^8.0",
 		"symfony/options-resolver": "^5.4 || ^6.4 || ^7.0 || ^8.0",
+		"symfony/process": "^5.4 || ^6.4 || ^7.0 || ^8.0",
 		"symfony/yaml": "^5.4 || ^6.4 || ^7.0 || ^8.0"
 	},
 	"require-dev": {

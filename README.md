@@ -49,6 +49,7 @@ composer bump-version [major|minor|patch] --release
   - [PHP API](docs/api.md)
   - [Version range](docs/version-range.md)
 * Configuration
+  - [Actions](docs/actions.md)
   - [Config file](docs/config-file.md)
   - [Presets](docs/presets.md)
   - [Schema](docs/schema.md)

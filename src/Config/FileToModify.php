@@ -24,6 +24,7 @@ declare(strict_types=1);
 namespace EliasHaeussler\VersionBumper\Config;
 
 use EliasHaeussler\VersionBumper\Exception;
+use EliasHaeussler\VersionBumper\Version;
 use Symfony\Component\Filesystem;
 
 use function is_string;
@@ -42,7 +43,9 @@ final class FileToModify
     private array $patterns = [];
 
     /**
-     * @param list<string|FilePattern> $patterns
+     * @param list<string|FilePattern>    $patterns
+     * @param list<Version\Action\Action> $preActions
+     * @param list<Version\Action\Action> $postActions
      *
      * @throws Exception\FilePatternIsInvalid
      */
@@ -51,6 +54,8 @@ final class FileToModify
         array $patterns = [],
         private readonly bool $reportUnmatched = false,
         private readonly bool $reportMissing = true,
+        private readonly array $preActions = [],
+        private readonly array $postActions = [],
     ) {
         foreach ($patterns as $pattern) {
             $this->add($pattern);
@@ -80,6 +85,8 @@ final class FileToModify
     }
 
     /**
+     * @impure
+     *
      * @throws Exception\FilePatternIsInvalid
      */
     public function add(string|FilePattern $pattern): self
@@ -101,5 +108,37 @@ final class FileToModify
     public function reportMissing(): bool
     {
         return $this->reportMissing;
+    }
+
+    /**
+     * @return list<Version\Action\Action>
+     */
+    public function preActions(): array
+    {
+        return $this->preActions;
+    }
+
+    /**
+     * @return list<Version\Action\Action>
+     */
+    public function postActions(): array
+    {
+        return $this->postActions;
+    }
+
+    /**
+     * @return list<Version\Action\Action>
+     */
+    public function getActionsByType(Version\Action\ActionType $type): array
+    {
+        return match ($type) {
+            Version\Action\ActionType::PreAction => $this->preActions,
+            Version\Action\ActionType::PostAction => $this->postActions,
+        };
+    }
+
+    public function equals(self $other, string $rootPath): bool
+    {
+        return $this->fullPath($rootPath) === $other->fullPath($rootPath);
     }
 }

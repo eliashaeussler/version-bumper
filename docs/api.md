@@ -14,13 +14,17 @@ The main entrypoint of the plugin is the
 use EliasHaeussler\VersionBumper;
 
 // Define files and patterns in which to bump new versions
+$packageJsonFile = new VersionBumper\Config\FileToModify(
+    path: 'package.json',
+    patterns: [
+        '"version": "{%version%}"',
+    ],
+    postActions: [
+        new VersionBumper\Version\Action\PackageLockAction(),
+    ],
+);
 $filesToModify = [
-    new VersionBumper\Config\FileToModify(
-        'package.json',
-        [
-            '"version": "{%version%}"',
-        ],
-    ),
+    $packageJsonFile,
     new VersionBumper\Config\FileToModify(
         'src/Version.php',
         [
@@ -56,6 +60,44 @@ foreach ($results as $result) {
                 $operation->source(),
                 $operation->target(),
             );
+            echo PHP_EOL;
+        }
+    }
+}
+```
+
+## Execute actions
+
+Actions can be executed using the
+[`Version\ActionDispatcher`](../src/Version/ActionDispatcher.php) class:
+
+```php
+use EliasHaeussler\VersionBumper;
+
+$output = new \Symfony\Component\Console\Output\BufferedOutput();
+$actionDispatcher = new VersionBumper\Version\ActionDispatcher($rootPath, $output);
+$actionExecutionResult = $actionDispatcher->dispatchAll(
+    $packageJsonFile->preActions(), // or ->postActions()
+    $packageJsonFile,
+);
+
+if ($actionExecutionResult->failed()) {
+    echo 'Something went wrong while executing pre-actions. Details:';
+    echo PHP_EOL;
+    echo $output->fetch();
+
+    exit(1);
+}
+
+foreach ($actionExecutionResult->results() as $result) {
+    // File: package.json
+    echo sprintf('File: %s', $result->file()->path());
+    echo PHP_EOL;
+
+    foreach ($result->groupedOperations() as $operations) {
+        foreach ($operations as $operation) {
+            // Regenerated
+            echo sprintf('Operation: %s', $operation->state()->name);
             echo PHP_EOL;
         }
     }

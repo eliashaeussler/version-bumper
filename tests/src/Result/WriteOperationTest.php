@@ -97,6 +97,22 @@ final class WriteOperationTest extends Framework\TestCase
     }
 
     #[Framework\Attributes\Test]
+    public function constructorThrowsExceptionOnMissingPattern(): void
+    {
+        $this->expectExceptionObject(
+            new Src\Exception\FilePatternIsMissing(),
+        );
+
+        new Src\Result\WriteOperation(
+            new Src\Version\Version(1, 0, 0),
+            new Src\Version\Version(2, 0, 0),
+            '',
+            null,
+            Src\Enum\OperationState::Skipped,
+        );
+    }
+
+    #[Framework\Attributes\Test]
     public function matchedReturnsTrueIfOperationStateIsNotUnmatched(): void
     {
         self::assertTrue($this->subject->matched());

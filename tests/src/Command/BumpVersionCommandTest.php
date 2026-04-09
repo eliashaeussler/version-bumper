@@ -60,15 +60,26 @@ final class BumpVersionCommandTest extends Framework\TestCase
     #[Framework\Attributes\Test]
     public function executeFailsIfConfigFileIsNotConfigured(): void
     {
-        $this->commandTester->execute([
-            'range' => 'next',
-        ]);
+        $cwd = getcwd();
+        $rootPath = dirname(__DIR__).'/Fixtures';
 
-        self::assertSame(Console\Command\Command::INVALID, $this->commandTester->getStatusCode());
-        self::assertStringContainsString(
-            'Please provide a config file path using the --config option.',
-            $this->commandTester->getDisplay(),
-        );
+        self::assertIsString($cwd);
+
+        chdir($rootPath.'/RootPath');
+
+        try {
+            $this->commandTester->execute([
+                'range' => 'next',
+            ]);
+
+            self::assertSame(Console\Command\Command::INVALID, $this->commandTester->getStatusCode());
+            self::assertStringContainsString(
+                'Please provide a config file path using the --config option.',
+                $this->commandTester->getDisplay(),
+            );
+        } finally {
+            chdir($cwd);
+        }
     }
 
     #[Framework\Attributes\Test]
@@ -276,6 +287,237 @@ final class BumpVersionCommandTest extends Framework\TestCase
     }
 
     #[Framework\Attributes\Test]
+    public function executeExecutesConfiguredPreActions(): void
+    {
+        $filesystem = new Filesystem\Filesystem();
+
+        $cwd = getcwd();
+        $configFile = dirname(__DIR__).'/Fixtures/ConfigFiles/valid-config-with-pre-actions.json';
+        $rootPath = dirname(__DIR__).'/Fixtures/NpmPackagePreset/valid';
+        $tempRootPath = dirname(__DIR__).'/Fixtures/RootPathTemp';
+
+        self::assertIsString($cwd);
+
+        $filesystem->remove($tempRootPath);
+        $filesystem->mirror($rootPath, $tempRootPath);
+
+        $packageLockBeforeUpdate = file_get_contents($tempRootPath.'/package-lock.json');
+
+        self::assertIsString($packageLockBeforeUpdate);
+
+        chdir($tempRootPath);
+
+        try {
+            $this->commandTester->execute([
+                'range' => '2.0.0',
+                '--config' => $configFile,
+            ]);
+
+            self::assertFileExists($tempRootPath.'/package-lock.json');
+
+            $output = $this->commandTester->getDisplay();
+
+            self::assertSame(Console\Command\Command::SUCCESS, $this->commandTester->getStatusCode());
+            self::assertJsonStringNotEqualsJsonFile($tempRootPath.'/package-lock.json', $packageLockBeforeUpdate);
+            self::assertStringContainsString('Regenerated lock file (via post-action)', $output);
+        } finally {
+            $filesystem->remove($tempRootPath);
+
+            chdir($cwd);
+        }
+    }
+
+    #[Framework\Attributes\Test]
+    public function executeFailsOnPreActionExecutionFailure(): void
+    {
+        $filesystem = new Filesystem\Filesystem();
+
+        $cwd = getcwd();
+        $configFile = dirname(__DIR__).'/Fixtures/ConfigFiles/valid-config-with-pre-actions.json';
+        $rootPath = dirname(__DIR__).'/Fixtures/NpmPackagePreset/invalid--malformed-package-json';
+        $tempRootPath = dirname(__DIR__).'/Fixtures/RootPathTemp';
+
+        self::assertIsString($cwd);
+
+        $filesystem->remove($tempRootPath);
+        $filesystem->mirror($rootPath, $tempRootPath);
+
+        chdir($tempRootPath);
+
+        try {
+            $this->commandTester->execute([
+                'range' => '2.0.0',
+                '--config' => $configFile,
+            ]);
+
+            $output = $this->commandTester->getDisplay();
+
+            self::assertSame(Console\Command\Command::FAILURE, $this->commandTester->getStatusCode());
+            self::assertStringContainsString('An error occured while executing pre-actions.', $output);
+        } finally {
+            $filesystem->remove($tempRootPath);
+
+            chdir($cwd);
+        }
+    }
+
+    #[Framework\Attributes\Test]
+    public function executeExecutesConfiguredPostActions(): void
+    {
+        $filesystem = new Filesystem\Filesystem();
+
+        $cwd = getcwd();
+        $configFile = dirname(__DIR__).'/Fixtures/ConfigFiles/valid-config-with-post-actions.json';
+        $rootPath = dirname(__DIR__).'/Fixtures/NpmPackagePreset/valid';
+        $tempRootPath = dirname(__DIR__).'/Fixtures/RootPathTemp';
+
+        self::assertIsString($cwd);
+
+        $filesystem->remove($tempRootPath);
+        $filesystem->mirror($rootPath, $tempRootPath);
+
+        $packageLockBeforeUpdate = file_get_contents($tempRootPath.'/package-lock.json');
+
+        self::assertIsString($packageLockBeforeUpdate);
+
+        chdir($tempRootPath);
+
+        try {
+            $this->commandTester->execute([
+                'range' => '2.0.0',
+                '--config' => $configFile,
+            ]);
+
+            self::assertFileExists($tempRootPath.'/package-lock.json');
+
+            $output = $this->commandTester->getDisplay();
+
+            self::assertSame(Console\Command\Command::SUCCESS, $this->commandTester->getStatusCode());
+            self::assertJsonStringNotEqualsJsonFile($tempRootPath.'/package-lock.json', $packageLockBeforeUpdate);
+            self::assertStringContainsString('Regenerated lock file (via post-action)', $output);
+        } finally {
+            $filesystem->remove($tempRootPath);
+
+            chdir($cwd);
+        }
+    }
+
+    #[Framework\Attributes\Test]
+    public function executeFailsOnPostActionExecutionFailure(): void
+    {
+        $filesystem = new Filesystem\Filesystem();
+
+        $cwd = getcwd();
+        $configFile = dirname(__DIR__).'/Fixtures/ConfigFiles/valid-config-with-post-actions.json';
+        $rootPath = dirname(__DIR__).'/Fixtures/NpmPackagePreset/invalid--malformed-package-json';
+        $tempRootPath = dirname(__DIR__).'/Fixtures/RootPathTemp';
+
+        self::assertIsString($cwd);
+
+        $filesystem->remove($tempRootPath);
+        $filesystem->mirror($rootPath, $tempRootPath);
+
+        chdir($tempRootPath);
+
+        try {
+            $this->commandTester->execute([
+                'range' => '2.0.0',
+                '--config' => $configFile,
+            ]);
+
+            $output = $this->commandTester->getDisplay();
+
+            self::assertSame(Console\Command\Command::FAILURE, $this->commandTester->getStatusCode());
+            self::assertStringContainsString('An error occured while executing post-actions.', $output);
+        } finally {
+            $filesystem->remove($tempRootPath);
+
+            chdir($cwd);
+        }
+    }
+
+    #[Framework\Attributes\Test]
+    public function executeDisplaysActionOutputOnActionExecutionFailure(): void
+    {
+        $filesystem = new Filesystem\Filesystem();
+
+        $cwd = getcwd();
+        $configFile = dirname(__DIR__).'/Fixtures/ConfigFiles/valid-config-with-pre-actions.json';
+        $rootPath = dirname(__DIR__).'/Fixtures/NpmPackagePreset/invalid--malformed-package-json';
+        $tempRootPath = dirname(__DIR__).'/Fixtures/RootPathTemp';
+
+        self::assertIsString($cwd);
+
+        $filesystem->remove($tempRootPath);
+        $filesystem->mirror($rootPath, $tempRootPath);
+
+        chdir($tempRootPath);
+
+        try {
+            $this->commandTester->execute(
+                [
+                    'range' => '2.0.0',
+                    '--config' => $configFile,
+                ],
+                [
+                    'verbosity' => Console\Output\OutputInterface::VERBOSITY_VERBOSE,
+                ],
+            );
+
+            $output = $this->commandTester->getDisplay();
+
+            self::assertSame(Console\Command\Command::FAILURE, $this->commandTester->getStatusCode());
+            self::assertStringContainsString('npm error code EJSONPARSE', $output);
+        } finally {
+            $filesystem->remove($tempRootPath);
+
+            chdir($cwd);
+        }
+    }
+
+    #[Framework\Attributes\Test]
+    public function executeMergesResultsFromActionExecutionsIntoOverallVersionBumpResult(): void
+    {
+        $filesystem = new Filesystem\Filesystem();
+
+        $cwd = getcwd();
+        $configFile = dirname(__DIR__).'/Fixtures/ConfigFiles/valid-config-with-multiple-modifications-in-same-file.json';
+        $rootPath = dirname(__DIR__).'/Fixtures/NpmPackagePreset/valid';
+        $tempRootPath = dirname(__DIR__).'/Fixtures/RootPathTemp';
+
+        self::assertIsString($cwd);
+
+        $filesystem->remove($tempRootPath);
+        $filesystem->mirror($rootPath, $tempRootPath);
+
+        chdir($tempRootPath);
+
+        try {
+            $this->commandTester->execute(
+                [
+                    'range' => '2.0.0',
+                    '--config' => $configFile,
+                ],
+                [
+                    'verbosity' => Console\Output\OutputInterface::VERBOSITY_VERBOSE,
+                ],
+            );
+
+            $output = $this->commandTester->getDisplay();
+
+            self::assertSame(Console\Command\Command::SUCCESS, $this->commandTester->getStatusCode());
+            self::assertStringContainsString(
+                'Bumped version from "1.0.0" to "2.0.0"'.PHP_EOL.'🔁 Regenerated lock file (via post-action)',
+                $output,
+            );
+        } finally {
+            $filesystem->remove($tempRootPath);
+
+            chdir($cwd);
+        }
+    }
+
+    #[Framework\Attributes\Test]
     public function executeDecoratesVersionBumpResult(): void
     {
         $configFile = dirname(__DIR__).'/Fixtures/ConfigFiles/valid-config-with-root-path.json';
@@ -297,7 +539,7 @@ final class BumpVersionCommandTest extends Framework\TestCase
     }
 
     #[Framework\Attributes\Test]
-    public function executeUpdatesComposerLockFileIfNecessary(): void
+    public function executeUpdatesComposerLockFileIfRequested(): void
     {
         $filesystem = new Filesystem\Filesystem();
 
@@ -331,7 +573,7 @@ final class BumpVersionCommandTest extends Framework\TestCase
 
             self::assertSame(Console\Command\Command::SUCCESS, $this->commandTester->getStatusCode());
             self::assertJsonStringNotEqualsJsonFile($tempRootPath.'/composer.lock', $composerLockBeforeUpdate);
-            self::assertStringContainsString('Updated composer.lock file (content hash change)', $output);
+            self::assertStringContainsString('Regenerated lock file (via post-action)', $output);
         } finally {
             $filesystem->remove($tempRootPath);
 

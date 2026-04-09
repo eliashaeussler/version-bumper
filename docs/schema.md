@@ -7,7 +7,7 @@ presets:
   - composer-package
   - name: npm-package
     options:
-      packageName: '@vendor/my-fancy-library'
+      path: 'Build/Frontend'
 
 filesToModify:
   - path: relative/or/absolute/path/to/file
@@ -15,6 +15,11 @@ filesToModify:
       # Each pattern must contain a {%version%} placeholder
       - '"version": "{%version%}"'
     reportUnmatched: true
+  - path: Build/composer-custom.json
+    patterns:
+      - '"version": "{%version%}"'
+    postActions:
+      - 'composer-lock'
 
 releaseOptions:
   commitMessage: '[RELEASE] Release of my-fancy-library {%version%}'
@@ -64,6 +69,8 @@ preset identifier only) or using object syntax (provide identifier and options).
 | `filesToModify.*.patterns`        | Array of strings | ✅        | List of version patterns to be searched and replaced in the configured file. Each pattern must contain a `{%version%}` placeholder that is replaced by the new version. Patterns are internally converted to regular expressions, so feel free to use regex syntax such as `\s+`. |
 | `filesToModify.*.reportUnmatched` | Boolean          | –        | Show warning if a configured pattern does not match file contents. Useful in combination with the `--strict` command option.                                                                                                                                                      |
 | `filesToModify.*.reportMissing`   | Boolean          | –        | Fail if file to modify does not exist (defaults to `true`).                                                                                                                                                                                                                       |
+| `filesToModify.*.preActions`      | Array of strings | –        | List of [actions](actions.md) (identified by name) to perform right before the file gets modified.                                                                                                                                                                                |
+| `filesToModify.*.postActions`     | Array of strings | –        | List of [actions](actions.md) (identified by name) to perform once the file has been modified.                                                                                                                                                                                    |
 
 ## Release options
 

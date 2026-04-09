@@ -55,6 +55,11 @@ final class ComposerPackagePresetTest extends Framework\TestCase
                         new Src\Config\FilePattern('"version": "{%version%}"'),
                     ],
                     true,
+                    true,
+                    [],
+                    [
+                        new Src\Version\Action\ComposerLockAction(),
+                    ],
                 ),
             ],
         );

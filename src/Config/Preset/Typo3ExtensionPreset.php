@@ -24,6 +24,7 @@ declare(strict_types=1);
 namespace EliasHaeussler\VersionBumper\Config\Preset;
 
 use EliasHaeussler\VersionBumper\Config;
+use EliasHaeussler\VersionBumper\Version;
 use Symfony\Component\OptionsResolver;
 
 use function in_array;
@@ -65,6 +66,11 @@ final class Typo3ExtensionPreset extends BasePreset
                     new Config\FilePattern('"version": "{%version%}'),
                 ],
                 true,
+                true,
+                [],
+                [
+                    new Version\Action\ComposerLockAction(),
+                ],
             ),
         ];
 

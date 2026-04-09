@@ -23,6 +23,7 @@ declare(strict_types=1);
 
 namespace EliasHaeussler\VersionBumper\Config;
 
+use EliasHaeussler\VersionBumper\Version;
 use ReflectionObject;
 
 use function array_merge;
@@ -63,6 +64,17 @@ final class VersionBumperConfig
     public function filesToModify(): array
     {
         return $this->filesToModify;
+    }
+
+    public function hasActions(Version\Action\ActionType $type): bool
+    {
+        foreach ($this->filesToModify as $fileToModify) {
+            if ([] !== $fileToModify->getActionsByType($type)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public function rootPath(): ?string

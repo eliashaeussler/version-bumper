@@ -2,4 +2,6 @@ filesToModify:
   - path: foo
     patterns:
       - 'baz: {%version%}'
+    postActions:
+      - 'composer-lock'
 rootPath: ..

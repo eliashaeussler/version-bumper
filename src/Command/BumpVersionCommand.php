@@ -25,9 +25,8 @@ namespace EliasHaeussler\VersionBumper\Command;
 
 use Composer\Command;
 use Composer\Composer;
-use Composer\Console\Application;
-use Composer\Factory;
 use CuyZ\Valinor;
+use EliasHaeussler\TaskRunner;
 use EliasHaeussler\VersionBumper\Config;
 use EliasHaeussler\VersionBumper\Enum;
 use EliasHaeussler\VersionBumper\Exception;
@@ -36,6 +35,7 @@ use EliasHaeussler\VersionBumper\Version;
 use GitElephant\Command\Caller;
 use Symfony\Component\Console;
 use Symfony\Component\Filesystem;
+use Throwable;
 
 use function array_filter;
 use function array_map;
@@ -48,6 +48,7 @@ use function method_exists;
 use function reset;
 use function sprintf;
 use function trim;
+use function usort;
 
 /**
  * BumpVersionCommand.
@@ -62,6 +63,7 @@ final class BumpVersionCommand extends Command\BaseCommand
     private readonly Version\VersionRangeDetector $versionRangeDetector;
     private readonly Version\VersionReleaser $releaser;
     private Console\Style\SymfonyStyle $io;
+    private TaskRunner\TaskRunner $taskRunner;
 
     public function __construct(
         ?Composer $composer = null,
@@ -123,6 +125,7 @@ final class BumpVersionCommand extends Command\BaseCommand
     protected function initialize(Console\Input\InputInterface $input, Console\Output\OutputInterface $output): void
     {
         $this->io = new Console\Style\SymfonyStyle($input, $output);
+        $this->taskRunner = new TaskRunner\TaskRunner($this->io);
     }
 
     protected function execute(Console\Input\InputInterface $input, Console\Output\OutputInterface $output): int
@@ -160,9 +163,7 @@ final class BumpVersionCommand extends Command\BaseCommand
                 return self::FAILURE;
             }
 
-            if (!$this->updateComposerLockIfNeeded($input, $output, $rootPath, $results)) {
-                return self::FAILURE;
-            }
+            $this->decorateVersionBumpResults($results, $rootPath);
 
             if ($release && !$this->releaseVersion($results, $rootPath, $config->releaseOptions(), $dryRun)) {
                 return self::FAILURE;
@@ -183,7 +184,7 @@ final class BumpVersionCommand extends Command\BaseCommand
 
         if ($strict) {
             foreach ($results as $versionBumpResult) {
-                if ($versionBumpResult->hasUnmatchedReports()) {
+                if ($versionBumpResult->hasUnmatchedOperations()) {
                     return self::FAILURE;
                 }
             }
@@ -195,7 +196,7 @@ final class BumpVersionCommand extends Command\BaseCommand
     /**
      * @return list<Result\VersionBumpResult>|null
      *
-     * @throws Exception\Exception
+     * @throws Throwable
      */
     private function bumpVersions(
         Config\VersionBumperConfig $config,
@@ -203,6 +204,8 @@ final class BumpVersionCommand extends Command\BaseCommand
         string $rootPath,
         bool $dryRun,
     ): ?array {
+        $results = [];
+
         // Auto-detect version range from indicators
         if (null !== $rangeOrVersion) {
             $versionRange = Enum\VersionRange::tryFromInput($rangeOrVersion) ?? $rangeOrVersion;
@@ -229,11 +232,96 @@ final class BumpVersionCommand extends Command\BaseCommand
 
         $this->decorateAppliedPresets($config->presets());
 
-        $results = $this->bumper->bump($config->filesToModify(), $rootPath, $versionRange, $dryRun);
+        if ($this->io->isVerbose()) {
+            $this->io->title('Running version bumper');
+        }
 
-        $this->decorateVersionBumpResults($results, $rootPath);
+        // Execute pre-actions
+        if (!$dryRun && !$this->executeActions($config, Version\Action\ActionType::PreAction, $results, $rootPath)) {
+            return null;
+        }
+
+        // Bump versions
+        $versionBumpResults = $this->taskRunner->run(
+            'Bumping versions in files',
+            fn () => $this->bumper->bump($config->filesToModify(), $rootPath, $versionRange, $dryRun),
+        );
+
+        // Merged results from version bump with global results
+        $this->mergeResults($versionBumpResults, $results, $rootPath);
+
+        // Execute post-actions
+        if (!$dryRun && !$this->executeActions($config, Version\Action\ActionType::PostAction, $results, $rootPath)) {
+            return null;
+        }
 
         return $results;
+    }
+
+    /**
+     * @param list<Result\VersionBumpResult> $results
+     */
+    private function executeActions(
+        Config\VersionBumperConfig $config,
+        Version\Action\ActionType $type,
+        array &$results,
+        string $rootPath,
+    ): bool {
+        if (!$config->hasActions($type)) {
+            return true;
+        }
+
+        try {
+            return $this->taskRunner->run(
+                sprintf('Executing %s', $type->label(true)),
+                function (TaskRunner\RunnerContext $context) use ($config, &$results, $rootPath, $type): bool {
+                    $dispatcher = new Version\ActionDispatcher($rootPath, $this->io);
+
+                    // Consider only files with matched operations for post-actions,
+                    // otherwise take all configured files into account
+                    if (Version\Action\ActionType::PostAction === $type) {
+                        $filesToConsider = array_map(
+                            static fn (Result\VersionBumpResult $result) => $result->file(),
+                            array_filter(
+                                $results,
+                                static fn (Result\VersionBumpResult $result) => $result->hasMatchedOperations(),
+                            ),
+                        );
+                    } else {
+                        $filesToConsider = $config->filesToModify();
+                    }
+
+                    foreach ($filesToConsider as $fileToModify) {
+                        $actionExecutionResult = $dispatcher->dispatchAll(
+                            $fileToModify->getActionsByType($type),
+                            $fileToModify,
+                        );
+
+                        if ($actionExecutionResult->failed()) {
+                            if ($context->output->isVerbose() && $actionExecutionResult->hasOutput()) {
+                                $context->output->write($actionExecutionResult->output());
+                            }
+
+                            throw new Exception\ActionExecutionFailed($actionExecutionResult);
+                        }
+
+                        $this->mergeResults($actionExecutionResult->results(), $results, $rootPath);
+                    }
+
+                    return true;
+                },
+            );
+        } catch (Exception\ActionExecutionFailed) {
+            $this->io->error(
+                sprintf('An error occured while executing %s.', $type->label(true)),
+            );
+
+            return false;
+        } catch (Throwable $exception) {
+            $this->io->error($exception->getMessage());
+
+            return false;
+        }
     }
 
     /**
@@ -258,6 +346,30 @@ final class BumpVersionCommand extends Command\BaseCommand
         }
 
         return false;
+    }
+
+    /**
+     * @param list<Result\VersionBumpResult> $source
+     * @param list<Result\VersionBumpResult> $target
+     */
+    private function mergeResults(array $source, array &$target, string $rootPath): void
+    {
+        foreach ($source as $sourceResult) {
+            $finalResult = null;
+
+            foreach ($target as $targetResult) {
+                if ($targetResult->file()->equals($sourceResult->file(), $rootPath)) {
+                    $finalResult = $targetResult;
+                    break;
+                }
+            }
+
+            if (null !== $finalResult) {
+                $finalResult->merge($sourceResult);
+            } else {
+                $target[] = $sourceResult;
+            }
+        }
     }
 
     /**
@@ -289,6 +401,14 @@ final class BumpVersionCommand extends Command\BaseCommand
     private function decorateVersionBumpResults(array $results, string $rootPath): void
     {
         $titleDisplayed = false;
+
+        usort(
+            $results,
+            static fn (
+                Result\VersionBumpResult $a,
+                Result\VersionBumpResult $b,
+            ) => $a->file()->fullPath($rootPath) <=> $b->file()->fullPath($rootPath),
+        );
 
         foreach ($results as $result) {
             if (!$result->hasOperations()) {
@@ -328,8 +448,9 @@ final class BumpVersionCommand extends Command\BaseCommand
                         $operation->source()?->full() ?? '',
                         $operation->target()?->full() ?? '',
                     ),
+                    Enum\OperationState::Regenerated => '🔁 Regenerated lock file (via post-action)',
                     Enum\OperationState::Skipped => '⏩ Skipped file due to unmodified contents',
-                    Enum\OperationState::Unmatched => '❓ Unmatched file pattern: '.$operation->pattern()->original(),
+                    Enum\OperationState::Unmatched => '❓ Unmatched file pattern: '.$operation->pattern()?->original(),
                 };
 
                 if ($numberOfOperations > 1) {
@@ -391,94 +512,6 @@ final class BumpVersionCommand extends Command\BaseCommand
         }
 
         return null;
-    }
-
-    /**
-     * @param list<Result\VersionBumpResult> $results
-     */
-    private function updateComposerLockIfNeeded(
-        Console\Input\InputInterface $input,
-        Console\Output\OutputInterface $output,
-        string $rootPath,
-        array &$results,
-    ): bool {
-        $this->resetComposer();
-
-        $composer = $this->getComposerInstance();
-        $locker = $composer?->getLocker();
-
-        if (null === $locker || !$locker->isLocked() || $locker->isFresh()) {
-            return true;
-        }
-
-        $this->io->title('File integrity');
-
-        $application = new Application();
-        $application->setAutoExit(false);
-
-        $commandOutput = new Console\Output\BufferedOutput(
-            $output->getVerbosity(),
-            $output->isDecorated(),
-            $output->getFormatter(),
-        );
-
-        $parameters = [
-            'command' => 'update',
-            '--ignore-platform-reqs' => true,
-            '--lock' => true,
-            '--no-autoloader' => true,
-            '--working-dir' => $rootPath,
-        ];
-
-        if ($input->hasParameterOption('--no-ansi')) {
-            $parameters['--no-ansi'] = $input->getParameterOption('--no-ansi');
-        }
-
-        if ($input->hasParameterOption('--no-plugins')) {
-            $parameters['--no-plugins'] = $input->getParameterOption('--no-plugins');
-        }
-
-        if ($input->hasParameterOption('--no-scripts')) {
-            $parameters['--no-scripts'] = $input->getParameterOption('--no-scripts');
-        }
-
-        try {
-            $result = $application->run(new Console\Input\ArrayInput($parameters), $commandOutput);
-        } catch (\Exception $exception) {
-            $this->io->write($commandOutput->fetch());
-            $this->io->error($exception->getMessage());
-
-            return false;
-        }
-
-        if (self::SUCCESS === $result) {
-            $this->io->writeln('✅ Updated <info>composer.lock</info> file (content hash change)');
-
-            $composerJson = $composer->getConfig()->getConfigSource()->getName();
-            $composerLock = Factory::getLockFile($composerJson);
-
-            // Add modified lock file to results array to include it in subsequent release operations
-            foreach ($results as $result) {
-                if ($result->file()->fullPath($rootPath) === $composerJson) {
-                    $results[] = new Result\VersionBumpResult(
-                        new Config\FileToModify($composerLock),
-                        $result->operations(),
-                    );
-
-                    break;
-                }
-            }
-
-            return true;
-        }
-
-        if ($output->isVerbose()) {
-            $this->io->write($commandOutput->fetch());
-        }
-
-        $this->io->error('An error occurred while updating the composer.lock file.');
-
-        return false;
     }
 
     private function getComposerInstance(): ?Composer

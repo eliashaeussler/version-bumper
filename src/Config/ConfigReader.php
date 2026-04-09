@@ -25,6 +25,7 @@ namespace EliasHaeussler\VersionBumper\Config;
 
 use CuyZ\Valinor;
 use EliasHaeussler\VersionBumper\Exception;
+use EliasHaeussler\VersionBumper\Version;
 use SplFileObject;
 use Symfony\Component\Filesystem;
 use Symfony\Component\Yaml;
@@ -151,10 +152,12 @@ final readonly class ConfigReader
 
     private function createMapper(): Valinor\Mapper\TreeMapper
     {
+        $actionFactory = new Version\Action\ActionFactory();
         $presetFactory = new Preset\PresetFactory();
 
         return (new Valinor\MapperBuilder())
             ->registerConstructor(
+                $actionFactory->get(...),
                 $presetFactory->get(...),
                 static fn (string $name): Preset\Preset => $presetFactory->get($name),
             )

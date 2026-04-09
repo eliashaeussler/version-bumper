@@ -1,5 +1,6 @@
 /.build
-/tests/src/Fixtures/RootPath/vendor
+/tests/src/Fixtures/*/node_modules
+/tests/src/Fixtures/*/vendor
 /tests/src/Fixtures/RootPathTemp
 /vendor
 /.php-cs-fixer.cache

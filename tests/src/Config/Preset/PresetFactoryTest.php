@@ -71,8 +71,8 @@ final class PresetFactoryTest extends Framework\TestCase
     #[Framework\Attributes\Test]
     public function getAppliesGivenConfigToConfigurablePreset(): void
     {
-        $expected = new Src\Config\Preset\NpmPackagePreset(['packageName' => '@foo/baz']);
+        $expected = new Src\Config\Preset\NpmPackagePreset(['path' => 'Build/Frontend']);
 
-        self::assertEquals($expected, $this->subject->get('npm-package', ['packageName' => '@foo/baz']));
+        self::assertEquals($expected, $this->subject->get('npm-package', ['path' => 'Build/Frontend']));
     }
 }
