@@ -145,17 +145,30 @@ final class BumpVersionCommand extends Command\BaseCommand
         }
 
         try {
-            $result = $this->bumpVersions($configFile, $rangeOrVersion, $rootPath, $dryRun);
+            $config = $this->configReader->readFromFile($configFile);
 
-            if (null === $result) {
-                return self::FAILURE;
+            // Override root path from config file
+            if (null !== $config->rootPath()) {
+                $rootPath = $config->rootPath();
             }
 
-            [$config, $results] = $result;
+            $results = $this->bumpVersions($config, $rangeOrVersion, $rootPath, $dryRun);
+
+            if (null === $results) {
+                return self::FAILURE;
+            }
 
             if ($release && !$this->releaseVersion($results, $rootPath, $config->releaseOptions(), $dryRun)) {
                 return self::FAILURE;
             }
+        } catch (Valinor\Mapper\MappingError $error) {
+            $this->decorateMappingError($error, $configFile);
+
+            return self::FAILURE;
+        } catch (Exception\Exception $exception) {
+            $this->io->error($exception->getMessage());
+
+            return self::FAILURE;
         } finally {
             if ($dryRun) {
                 $this->io->note('No write operations were performed (dry-run mode).');
@@ -174,56 +187,53 @@ final class BumpVersionCommand extends Command\BaseCommand
     }
 
     /**
-     * @return array{Config\VersionBumperConfig, list<Result\VersionBumpResult>}|null
+     * @return list<Result\VersionBumpResult>|null
+     *
+     * @throws Exception\Exception
      */
-    private function bumpVersions(string $configFile, ?string $rangeOrVersion, string $rootPath, bool $dryRun): ?array
-    {
-        try {
-            $config = $this->configReader->readFromFile($configFile);
-            $finalRootPath = $config->rootPath() ?? $rootPath;
+    private function bumpVersions(
+        Config\VersionBumperConfig $config,
+        ?string $rangeOrVersion,
+        string $rootPath,
+        bool $dryRun,
+    ): ?array {
+        // Auto-detect version range from indicators
+        if (null !== $rangeOrVersion) {
+            $versionRange = Enum\VersionRange::tryFromInput($rangeOrVersion) ?? $rangeOrVersion;
+        } elseif ([] !== $config->versionRangeIndicators()) {
+            $versionRange = $this->versionRangeDetector->detect($rootPath, $config->versionRangeIndicators());
+        } else {
+            $this->io->error('Please provide a version range or explicit version to bump in configured files.');
+            $this->io->block(
+                'You can also enable auto-detection by adding version range indicators to your configuration file.',
+                null,
+                'fg=cyan',
+                '💡 ',
+            );
 
-            // Auto-detect version range from indicators
-            if (null !== $rangeOrVersion) {
-                $versionRange = Enum\VersionRange::tryFromInput($rangeOrVersion) ?? $rangeOrVersion;
-            } elseif ([] !== $config->versionRangeIndicators()) {
-                $versionRange = $this->versionRangeDetector->detect($finalRootPath, $config->versionRangeIndicators());
-            } else {
-                $this->io->error('Please provide a version range or explicit version to bump in configured files.');
-                $this->io->block(
-                    'You can also enable auto-detection by adding version range indicators to your configuration file.',
-                    null,
-                    'fg=cyan',
-                    '💡 ',
-                );
-
-                return null;
-            }
-
-            // Exit early if version range detection fails
-            if (null === $versionRange) {
-                $this->io->error('Unable to auto-detect version range. Please provide a version range or explicit version instead.');
-
-                return null;
-            }
-
-            $this->decorateAppliedPresets($config->presets());
-
-            $results = $this->bumper->bump($config->filesToModify(), $finalRootPath, $versionRange, $dryRun);
-
-            $this->decorateVersionBumpResults($results, $rootPath);
-
-            return [$config, $results];
-        } catch (Valinor\Mapper\MappingError $error) {
-            $this->decorateMappingError($error, $configFile);
-        } catch (Exception\Exception $exception) {
-            $this->io->error($exception->getMessage());
+            return null;
         }
 
-        return null;
+        // Exit early if version range detection fails
+        if (null === $versionRange) {
+            $this->io->error('Unable to auto-detect version range. Please provide a version range or explicit version instead.');
+
+            return null;
+        }
+
+        $this->decorateAppliedPresets($config->presets());
+
+        $results = $this->bumper->bump($config->filesToModify(), $rootPath, $versionRange, $dryRun);
+
+        $this->decorateVersionBumpResults($results, $rootPath);
+
+        return $results;
     }
 
     /**
      * @param list<Result\VersionBumpResult> $results
+     *
+     * @throws Exception\Exception
      */
     private function releaseVersion(array $results, string $rootPath, Config\ReleaseOptions $options, bool $dryRun): bool
     {
@@ -236,7 +246,7 @@ final class BumpVersionCommand extends Command\BaseCommand
 
             return true;
         } catch (Exception\Exception $exception) {
-            $this->io->error($exception->getMessage());
+            throw $exception;
         } catch (\Exception $exception) {
             $this->io->error('Git error during release: '.$exception->getMessage());
         }
