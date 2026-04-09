@@ -101,7 +101,7 @@ final class Typo3ExtensionPreset extends BasePreset
 
     public static function getDescription(): string
     {
-        return 'TYPO3 extension, managed by ext_emconf.php';
+        return 'TYPO3 extension, managed by composer.json and ext_emconf.php';
     }
 
     protected function createOptionsResolver(): OptionsResolver\OptionsResolver

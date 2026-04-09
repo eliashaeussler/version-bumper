@@ -272,7 +272,7 @@ final class BumpVersionCommandTest extends Framework\TestCase
         $output = $this->commandTester->getDisplay();
 
         self::assertStringContainsString('Applied presets', $output);
-        self::assertStringContainsString('* TYPO3 extension, managed by ext_emconf.php (typo3-extension)', $output);
+        self::assertStringContainsString('* TYPO3 extension, managed by composer.json and ext_emconf.php (typo3-extension)', $output);
     }
 
     #[Framework\Attributes\Test]

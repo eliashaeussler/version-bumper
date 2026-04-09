@@ -38,8 +38,8 @@ from the given `package.json` file.
 
 ### TYPO3 extension (`typo3-extension`)
 
-Preset for legacy or public TYPO3 extensions managed by an
-`ext_emconf.php` file.
+Preset for TYPO3 extensions managed by `composer.json` (required)
+and `ext_emconf.php` (deprecated) files.
 
 | Option          | Type                                            | Required | Description                                                          |
 |-----------------|-------------------------------------------------|----------|----------------------------------------------------------------------|
