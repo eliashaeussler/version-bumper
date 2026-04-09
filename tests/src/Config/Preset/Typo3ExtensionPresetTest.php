@@ -57,6 +57,13 @@ final class Typo3ExtensionPresetTest extends Framework\TestCase
                     true,
                 ),
                 new Src\Config\FileToModify(
+                    'composer.json',
+                    [
+                        new Src\Config\FilePattern('"version": "{%version%}"'),
+                    ],
+                    true,
+                ),
+                new Src\Config\FileToModify(
                     'Documentation/guides.xml',
                     [
                         new Src\Config\FilePattern('release="{%version%}"'),
@@ -93,6 +100,13 @@ final class Typo3ExtensionPresetTest extends Framework\TestCase
                     true,
                 ),
                 new Src\Config\FileToModify(
+                    'composer.json',
+                    [
+                        new Src\Config\FilePattern('"version": "{%version%}"'),
+                    ],
+                    true,
+                ),
+                new Src\Config\FileToModify(
                     'Documentation/Settings.cfg',
                     [
                         new Src\Config\FilePattern('release = {%version%}'),
@@ -114,6 +128,13 @@ final class Typo3ExtensionPresetTest extends Framework\TestCase
                     'ext_emconf.php',
                     [
                         new Src\Config\FilePattern("'version' => '{%version%}'"),
+                    ],
+                    true,
+                ),
+                new Src\Config\FileToModify(
+                    'composer.json',
+                    [
+                        new Src\Config\FilePattern('"version": "{%version%}"'),
                     ],
                     true,
                 ),
