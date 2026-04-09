@@ -28,6 +28,9 @@ return PHPStanConfig\Config\Config::create(__DIR__)
         'src',
         'tests',
     )
+    ->not(
+        'tests/src/Fixtures/RootPath',
+    )
     ->withBaseline()
     ->withBleedingEdge()
     ->withSet(static function (PHPStanConfig\Set\SymfonySet $set) {

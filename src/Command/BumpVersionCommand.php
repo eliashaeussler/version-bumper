@@ -25,6 +25,8 @@ namespace EliasHaeussler\VersionBumper\Command;
 
 use Composer\Command;
 use Composer\Composer;
+use Composer\Console\Application;
+use Composer\Factory;
 use CuyZ\Valinor;
 use EliasHaeussler\VersionBumper\Config;
 use EliasHaeussler\VersionBumper\Enum;
@@ -155,6 +157,10 @@ final class BumpVersionCommand extends Command\BaseCommand
             $results = $this->bumpVersions($config, $rangeOrVersion, $rootPath, $dryRun);
 
             if (null === $results) {
+                return self::FAILURE;
+            }
+
+            if (!$this->updateComposerLockIfNeeded($input, $output, $rootPath, $results)) {
                 return self::FAILURE;
             }
 
@@ -370,13 +376,7 @@ final class BumpVersionCommand extends Command\BaseCommand
 
     private function readConfigFileFromRootPackage(): ?string
     {
-        if (method_exists($this, 'tryComposer')) {
-            // Composer >= 2.3
-            $composer = $this->tryComposer();
-        } else {
-            // Composer < 2.3
-            $composer = $this->getComposer(false);
-        }
+        $composer = $this->getComposerInstance();
 
         if (null === $composer) {
             return null;
@@ -391,5 +391,104 @@ final class BumpVersionCommand extends Command\BaseCommand
         }
 
         return null;
+    }
+
+    /**
+     * @param list<Result\VersionBumpResult> $results
+     */
+    private function updateComposerLockIfNeeded(
+        Console\Input\InputInterface $input,
+        Console\Output\OutputInterface $output,
+        string $rootPath,
+        array &$results,
+    ): bool {
+        $this->resetComposer();
+
+        $composer = $this->getComposerInstance();
+        $locker = $composer?->getLocker();
+
+        if (null === $locker || !$locker->isLocked() || $locker->isFresh()) {
+            return true;
+        }
+
+        $this->io->title('File integrity');
+
+        $application = new Application();
+        $application->setAutoExit(false);
+
+        $commandOutput = new Console\Output\BufferedOutput(
+            $output->getVerbosity(),
+            $output->isDecorated(),
+            $output->getFormatter(),
+        );
+
+        $parameters = [
+            'command' => 'update',
+            '--ignore-platform-reqs' => true,
+            '--lock' => true,
+            '--no-autoloader' => true,
+            '--working-dir' => $rootPath,
+        ];
+
+        if ($input->hasParameterOption('--no-ansi')) {
+            $parameters['--no-ansi'] = $input->getParameterOption('--no-ansi');
+        }
+
+        if ($input->hasParameterOption('--no-plugins')) {
+            $parameters['--no-plugins'] = $input->getParameterOption('--no-plugins');
+        }
+
+        if ($input->hasParameterOption('--no-scripts')) {
+            $parameters['--no-scripts'] = $input->getParameterOption('--no-scripts');
+        }
+
+        try {
+            $result = $application->run(new Console\Input\ArrayInput($parameters), $commandOutput);
+        } catch (\Exception $exception) {
+            $this->io->write($commandOutput->fetch());
+            $this->io->error($exception->getMessage());
+
+            return false;
+        }
+
+        if (self::SUCCESS === $result) {
+            $this->io->writeln('✅ Updated <info>composer.lock</info> file (content hash change)');
+
+            $composerJson = $composer->getConfig()->getConfigSource()->getName();
+            $composerLock = Factory::getLockFile($composerJson);
+
+            // Add modified lock file to results array to include it in subsequent release operations
+            foreach ($results as $result) {
+                if ($result->file()->fullPath($rootPath) === $composerJson) {
+                    $results[] = new Result\VersionBumpResult(
+                        new Config\FileToModify($composerLock),
+                        $result->operations(),
+                    );
+
+                    break;
+                }
+            }
+
+            return true;
+        }
+
+        if ($output->isVerbose()) {
+            $this->io->write($commandOutput->fetch());
+        }
+
+        $this->io->error('An error occurred while updating the composer.lock file.');
+
+        return false;
+    }
+
+    private function getComposerInstance(): ?Composer
+    {
+        // Composer >= 2.3
+        if (method_exists($this, 'tryComposer')) {
+            return $this->tryComposer();
+        }
+
+        // Composer < 2.3
+        return $this->getComposer(false);
     }
 }

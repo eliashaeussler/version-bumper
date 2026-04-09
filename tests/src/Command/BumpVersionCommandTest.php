@@ -27,10 +27,12 @@ use Composer\Composer;
 use Composer\Console\Application;
 use Composer\Factory;
 use Composer\IO\NullIO;
+use Composer\Util;
 use EliasHaeussler\VersionBumper as Src;
 use EliasHaeussler\VersionBumper\Tests;
 use PHPUnit\Framework;
 use Symfony\Component\Console;
+use Symfony\Component\Filesystem;
 
 use function chdir;
 use function dirname;
@@ -292,6 +294,49 @@ final class BumpVersionCommandTest extends Framework\TestCase
         self::assertStringContainsString('No write operations were performed (dry-run mode).', $output);
         self::assertStringNotContainsString('Skipped file due to unmodified contents', $output);
         self::assertStringNotContainsString('foobaz', $output);
+    }
+
+    #[Framework\Attributes\Test]
+    public function executeUpdatesComposerLockFileIfNecessary(): void
+    {
+        $filesystem = new Filesystem\Filesystem();
+
+        $cwd = getcwd();
+        $configFile = dirname(__DIR__).'/Fixtures/ConfigFiles/valid-config-with-composer-package-preset-temp-root-path.json';
+        $rootPath = dirname(__DIR__).'/Fixtures/RootPath';
+        $tempRootPath = dirname(__DIR__).'/Fixtures/RootPathTemp';
+
+        self::assertIsString($cwd);
+
+        $filesystem->remove($tempRootPath);
+        $filesystem->mirror($rootPath, $tempRootPath);
+
+        $composerLockBeforeUpdate = file_get_contents($tempRootPath.'/composer.lock');
+
+        self::assertIsString($composerLockBeforeUpdate);
+
+        Util\Platform::putEnv('COMPOSER', $tempRootPath.'/composer.json');
+
+        chdir($tempRootPath);
+
+        try {
+            $this->commandTester->execute([
+                'range' => '1.1.0',
+                '--config' => $configFile,
+            ]);
+
+            Util\Platform::clearEnv('COMPOSER');
+
+            $output = $this->commandTester->getDisplay();
+
+            self::assertSame(Console\Command\Command::SUCCESS, $this->commandTester->getStatusCode());
+            self::assertJsonStringNotEqualsJsonFile($tempRootPath.'/composer.lock', $composerLockBeforeUpdate);
+            self::assertStringContainsString('Updated composer.lock file (content hash change)', $output);
+        } finally {
+            $filesystem->remove($tempRootPath);
+
+            chdir($cwd);
+        }
     }
 
     #[Framework\Attributes\Test]
