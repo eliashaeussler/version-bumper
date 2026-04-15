@@ -26,6 +26,8 @@ namespace EliasHaeussler\VersionBumper\Tests\Config\Preset;
 use EliasHaeussler\VersionBumper as Src;
 use PHPUnit\Framework;
 
+use function json_encode;
+
 /**
  * Typo3ExtensionPresetTest.
  *
@@ -59,7 +61,7 @@ final class Typo3ExtensionPresetTest extends Framework\TestCase
                 new Src\Config\FileToModify(
                     'composer.json',
                     [
-                        new Src\Config\FilePattern('"version": "{%version%}"'),
+                        new Src\Config\FilePattern('"version": "{%version%}'),
                     ],
                     true,
                 ),
@@ -102,7 +104,7 @@ final class Typo3ExtensionPresetTest extends Framework\TestCase
                 new Src\Config\FileToModify(
                     'composer.json',
                     [
-                        new Src\Config\FilePattern('"version": "{%version%}"'),
+                        new Src\Config\FilePattern('"version": "{%version%}'),
                     ],
                     true,
                 ),
@@ -134,7 +136,7 @@ final class Typo3ExtensionPresetTest extends Framework\TestCase
                 new Src\Config\FileToModify(
                     'composer.json',
                     [
-                        new Src\Config\FilePattern('"version": "{%version%}"'),
+                        new Src\Config\FilePattern('"version": "{%version%}'),
                     ],
                     true,
                 ),
@@ -149,5 +151,41 @@ final class Typo3ExtensionPresetTest extends Framework\TestCase
         );
 
         self::assertEquals($expected, $this->subject->getConfig());
+    }
+
+    #[Framework\Attributes\Test]
+    public function getConfigReturnsConfigThatKeepsVersionSuffixInComposerJsonOnVersionBump(): void
+    {
+        $versionBumper = new Src\Version\VersionBumper();
+        $config = $this->subject->getConfig();
+        $composerFile = $config->filesToModify()[1];
+
+        self::assertSame('composer.json', $composerFile->path());
+
+        $rootPath = dirname(__DIR__, 2).'/Fixtures/RootPath';
+        $contentBackup = file_get_contents($composerFile->fullPath($rootPath));
+
+        self::assertIsString($contentBackup);
+
+        try {
+            $expected = json_encode(
+                [
+                    'version' => '1.1.0',
+                    'extra' => [
+                        'typo3/cms' => [
+                            'version' => '1.1.0+obsolete',
+                        ],
+                    ],
+                ],
+                JSON_THROW_ON_ERROR,
+            );
+
+            $actual = $versionBumper->bump([$composerFile], $rootPath, Src\Enum\VersionRange::Minor);
+
+            self::assertCount(1, $actual);
+            self::assertJsonStringEqualsJsonFile($composerFile->fullPath($rootPath), $expected);
+        } finally {
+            file_put_contents($composerFile->fullPath($rootPath), $contentBackup);
+        }
     }
 }

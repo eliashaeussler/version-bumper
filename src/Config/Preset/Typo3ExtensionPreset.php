@@ -61,7 +61,8 @@ final class Typo3ExtensionPreset extends BasePreset
             new Config\FileToModify(
                 'composer.json',
                 [
-                    new Config\FilePattern('"version": "{%version%}"'),
+                    // Missing trailing quote is intended to allow and retain version suffixes (e.g. "1.0.0-dev" or "1.0.0+obsolete")
+                    new Config\FilePattern('"version": "{%version%}'),
                 ],
                 true,
             ),
