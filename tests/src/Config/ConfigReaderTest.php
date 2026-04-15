@@ -334,7 +334,7 @@ final class ConfigReaderTest extends Framework\TestCase
                     new Src\Config\FileToModify(
                         'composer.json',
                         [
-                            new Src\Config\FilePattern('"version": "{%version%}"'),
+                            new Src\Config\FilePattern('"version": "{%version%}'),
                         ],
                         true,
                     ),
@@ -368,7 +368,7 @@ final class ConfigReaderTest extends Framework\TestCase
                     new Src\Config\FileToModify(
                         'composer.json',
                         [
-                            new Src\Config\FilePattern('"version": "{%version%}"'),
+                            new Src\Config\FilePattern('"version": "{%version%}'),
                         ],
                         true,
                     ),
