@@ -24,6 +24,7 @@ declare(strict_types=1);
 namespace EliasHaeussler\VersionBumper\Config\Preset;
 
 use EliasHaeussler\VersionBumper\Config;
+use EliasHaeussler\VersionBumper\Version;
 use Symfony\Component\OptionsResolver;
 
 use function ltrim;
@@ -52,6 +53,11 @@ final class ComposerPackagePreset extends BasePreset
                     new Config\FilePattern('"version": "{%version%}"'),
                 ],
                 true,
+                true,
+                [],
+                [
+                    new Version\Action\ComposerLockAction(),
+                ],
             ),
         ];
 

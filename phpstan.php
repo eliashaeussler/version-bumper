@@ -29,7 +29,7 @@ return PHPStanConfig\Config\Config::create(__DIR__)
         'tests',
     )
     ->not(
-        'tests/src/Fixtures/RootPath',
+        'tests/src/Fixtures',
     )
     ->withBaseline()
     ->withBleedingEdge()

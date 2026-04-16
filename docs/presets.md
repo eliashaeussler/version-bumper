@@ -13,9 +13,11 @@ options. The available options differ between presets.
 ### Composer package (`composer-package`)
 
 Preset for Composer packages managed by a `composer.json` file.
+Regenerates `composer.lock` file after successful version bump in
+`composer.json` file.
 
-| Option | Type   | Required | Description                                                                |
-|--------|--------|----------|----------------------------------------------------------------------------|
+| Option | Type   | Required | Description                                                                    |
+|--------|--------|----------|--------------------------------------------------------------------------------|
 | `path` | String | –        | Directory where `composer.json` is located, defaults to the current directory. |
 
 ### Conventional Commits (`conventional-commits`)
@@ -26,26 +28,25 @@ _This preset is not configurable._
 
 ### NPM package (`npm-package`)
 
-Preset for NPM packages managed by a `package.json` file.
+Preset for NPM packages managed by a `package.json` file. Regenerates
+`package-lock.json` file after successful version bump in `package.json`
+file.
 
-| Option        | Type   | Required       | Description                                                               |
-|---------------|--------|----------------|---------------------------------------------------------------------------|
-| `packageName` | String | –<sup>1)</sup> | Name of the package as configured in `package.json`.                      |
+| Option        | Type   | Required       | Description                                                                   |
+|---------------|--------|----------------|-------------------------------------------------------------------------------|
 | `path`        | String | –              | Directory where `package.json` is located, defaults to the current directory. |
-
-<sup>1)</sup> When omitted, the package name is automatically resolved
-from the given `package.json` file.
 
 ### TYPO3 extension (`typo3-extension`)
 
 Preset for TYPO3 extensions managed by `composer.json` (required)
-and `ext_emconf.php` (deprecated) files.
+and `ext_emconf.php` (deprecated) files. Regenerates `composer.lock`
+file after successful version bump in `composer.json` file.
 
-| Option          | Type                                            | Required | Description                                                          |
-|-----------------|-------------------------------------------------|----------|----------------------------------------------------------------------|
-| `documentation` | Boolean or `auto`/`legacy` keyword<sup>2)</sup> | –        | Define whether or not a ReST documentation is used in the extension. |
+| Option          | Type                                            | Required | Description                                                   |
+|-----------------|-------------------------------------------------|----------|---------------------------------------------------------------|
+| `documentation` | Boolean or `auto`/`legacy` keyword<sup>1)</sup> | –        | Define whether a ReST documentation is used in the extension. |
 
-<sup>2)</sup> By default or if keyword `auto` is used, ReST documentation
+<sup>1)</sup> By default or if keyword `auto` is used, ReST documentation
 version may be replaced, if existent, but version bumping will not fail if
 a ReST documentation does not exist. If `legacy` keyword is used, legacy
 Sphinx-based rendering documentation files will be used for version bumps.
@@ -67,7 +68,7 @@ presets:
   # Extended syntax, identifier and options are provided
   - name: npm-package
     options:
-      packageName: '@vendor/my-fancy-library'
+      path: 'Build/Frontend'
 
   # Extended syntax, but without options (not practically relevant, but possible)
   - name: typo3-extension

@@ -50,6 +50,7 @@ final class VersionBumper
      * @throws Exception\FileCouldNotBeModified
      * @throws Exception\FileDoesNotExist
      * @throws Exception\FileIsNotReadable
+     * @throws Exception\FilePatternIsMissing
      * @throws Exception\SourceVersionIsMissing
      * @throws Exception\TargetVersionIsMissing
      * @throws Exception\VersionBumpResultIsMissing
@@ -74,6 +75,7 @@ final class VersionBumper
      * @throws Exception\FileCouldNotBeModified
      * @throws Exception\FileDoesNotExist
      * @throws Exception\FileIsNotReadable
+     * @throws Exception\FilePatternIsMissing
      * @throws Exception\SourceVersionIsMissing
      * @throws Exception\TargetVersionIsMissing
      * @throws Exception\VersionBumpResultIsMissing
@@ -141,6 +143,7 @@ final class VersionBumper
     }
 
     /**
+     * @throws Exception\FilePatternIsMissing
      * @throws Exception\SourceVersionIsMissing
      * @throws Exception\TargetVersionIsMissing
      * @throws Exception\VersionBumpResultIsMissing

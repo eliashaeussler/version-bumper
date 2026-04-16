@@ -1,3 +1,4 @@
 {
-	"name": "@foo/baz"
+	"name": "@foo/baz",
+	"version": "1.0.0"
 }

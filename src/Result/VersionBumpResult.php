@@ -34,19 +34,29 @@ use function array_values;
  * @author Elias Häußler <elias@haeussler.dev>
  * @license GPL-3.0-or-later
  */
-final readonly class VersionBumpResult
+final class VersionBumpResult
 {
     /**
      * @param list<WriteOperation> $operations
      */
     public function __construct(
-        private Config\FileToModify $file,
+        private readonly Config\FileToModify $file,
         private array $operations,
     ) {}
 
     public function file(): Config\FileToModify
     {
         return $this->file;
+    }
+
+    /**
+     * @impure
+     */
+    public function add(WriteOperation $operation): self
+    {
+        $this->operations[] = $operation;
+
+        return $this;
     }
 
     /**
@@ -74,7 +84,7 @@ final readonly class VersionBumpResult
                 $operation->source()?->full(),
                 $operation->target()?->full(),
                 $operation->state()->name,
-                Enum\OperationState::Unmatched === $operation->state() ? $operation->pattern()->original() : '',
+                null !== $operation->pattern() ? $operation->pattern()->original() : '',
             ]);
 
             if (!isset($operations[$identifier])) {
@@ -87,7 +97,18 @@ final readonly class VersionBumpResult
         return array_values($operations);
     }
 
-    public function hasUnmatchedReports(): bool
+    public function hasMatchedOperations(): bool
+    {
+        foreach ($this->operations as $operation) {
+            if ($operation->state()->matched()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public function hasUnmatchedOperations(): bool
     {
         foreach ($this->operations as $operation) {
             if (Enum\OperationState::Unmatched === $operation->state()) {
@@ -96,5 +117,17 @@ final readonly class VersionBumpResult
         }
 
         return false;
+    }
+
+    /**
+     * @impure
+     */
+    public function merge(self $other): self
+    {
+        foreach ($other->operations() as $operation) {
+            $this->add($operation);
+        }
+
+        return $this;
     }
 }

@@ -64,6 +64,11 @@ final class Typo3ExtensionPresetTest extends Framework\TestCase
                         new Src\Config\FilePattern('"version": "{%version%}'),
                     ],
                     true,
+                    true,
+                    [],
+                    [
+                        new Src\Version\Action\ComposerLockAction(),
+                    ],
                 ),
                 new Src\Config\FileToModify(
                     'Documentation/guides.xml',
@@ -107,6 +112,11 @@ final class Typo3ExtensionPresetTest extends Framework\TestCase
                         new Src\Config\FilePattern('"version": "{%version%}'),
                     ],
                     true,
+                    true,
+                    [],
+                    [
+                        new Src\Version\Action\ComposerLockAction(),
+                    ],
                 ),
                 new Src\Config\FileToModify(
                     'Documentation/Settings.cfg',
@@ -139,6 +149,11 @@ final class Typo3ExtensionPresetTest extends Framework\TestCase
                         new Src\Config\FilePattern('"version": "{%version%}'),
                     ],
                     true,
+                    true,
+                    [],
+                    [
+                        new Src\Version\Action\ComposerLockAction(),
+                    ],
                 ),
                 new Src\Config\FileToModify(
                     'Documentation/guides.xml',

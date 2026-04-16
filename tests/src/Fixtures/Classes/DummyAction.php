@@ -21,24 +21,36 @@ declare(strict_types=1);
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-namespace EliasHaeussler\VersionBumper\Exception;
+namespace EliasHaeussler\VersionBumper\Tests\Fixtures\Classes;
 
-use Throwable;
+use EliasHaeussler\VersionBumper\Config;
+use EliasHaeussler\VersionBumper\Result;
+use EliasHaeussler\VersionBumper\Version;
+use Symfony\Component\Console;
 
 /**
- * ManifestFileIsMalformed.
+ * DummyAction.
  *
  * @author Elias Häußler <elias@haeussler.dev>
  * @license GPL-3.0-or-later
  */
-final class ManifestFileIsMalformed extends Exception
+final class DummyAction implements Version\Action\Action
 {
-    public function __construct(string $path, ?Throwable $previous = null)
+    public ?Result\ActionExecutionResult $result = null;
+    public bool $executed = false;
+
+    public function execute(
+        string $rootPath,
+        Config\FileToModify $sourceFile,
+        Console\Output\OutputInterface $output,
+    ): Result\ActionExecutionResult {
+        $this->executed = true;
+
+        return $this->result ?? Result\ActionExecutionResult::skipped($this);
+    }
+
+    public static function getIdentifier(): string
     {
-        parent::__construct(
-            sprintf('Manifest file "%s" is malformed and cannot be read.', $path),
-            1749044586,
-            $previous,
-        );
+        return 'dummy';
     }
 }

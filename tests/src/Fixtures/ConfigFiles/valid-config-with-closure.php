@@ -22,6 +22,7 @@ declare(strict_types=1);
  */
 
 use EliasHaeussler\VersionBumper\Config;
+use EliasHaeussler\VersionBumper\Version;
 
 return static fn () => new Config\VersionBumperConfig(
     filesToModify: [
@@ -29,6 +30,9 @@ return static fn () => new Config\VersionBumperConfig(
             'foo',
             [
                 new Config\FilePattern('baz: {%version%}'),
+            ],
+            postActions: [
+                new Version\Action\ComposerLockAction(),
             ],
         ),
     ],

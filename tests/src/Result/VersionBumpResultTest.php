@@ -82,6 +82,19 @@ final class VersionBumpResultTest extends Framework\TestCase
     }
 
     #[Framework\Attributes\Test]
+    public function addAddsOperationToListOfOperations(): void
+    {
+        $operation = Src\Result\WriteOperation::regenerated();
+
+        self::assertCount(5, $this->subject->operations());
+
+        $this->subject->add($operation);
+
+        self::assertCount(6, $this->subject->operations());
+        self::assertSame($operation, $this->subject->operations()[5]);
+    }
+
+    #[Framework\Attributes\Test]
     public function groupedOperationsReturnsWriteOperationsGroupedByUniqueness(): void
     {
         $expected = [
@@ -133,9 +146,34 @@ final class VersionBumpResultTest extends Framework\TestCase
     }
 
     #[Framework\Attributes\Test]
-    public function hasUnmatchedReportsReturnsTrueIfAnyWriteOperationHasUnmatchedOperationState(): void
+    public function hasMatchedOperationsReturnsTrueIfAnyWriteOperationHasMatchedOperationState(): void
     {
-        self::assertTrue($this->subject->hasUnmatchedReports());
+        self::assertTrue($this->subject->hasMatchedOperations());
+
+        $subject = new Src\Result\VersionBumpResult(
+            new Src\Config\FileToModify(
+                'package-lock.json',
+                [
+                    '"name": "foo/baz",\s+"version": "{%version%}"',
+                ],
+            ),
+            [
+                Src\Result\WriteOperation::unmatched(
+                    new Src\Config\FilePattern('"foo/version": "{%version%}"'),
+                ),
+                Src\Result\WriteOperation::unmatched(
+                    new Src\Config\FilePattern('"baz/version": "{%version%}"'),
+                ),
+            ],
+        );
+
+        self::assertFalse($subject->hasMatchedOperations());
+    }
+
+    #[Framework\Attributes\Test]
+    public function hasUnmatchedOperationsReturnsTrueIfAnyWriteOperationHasUnmatchedOperationState(): void
+    {
+        self::assertTrue($this->subject->hasUnmatchedOperations());
 
         $subject = new Src\Result\VersionBumpResult(
             new Src\Config\FileToModify(
@@ -172,6 +210,26 @@ final class VersionBumpResultTest extends Framework\TestCase
             ],
         );
 
-        self::assertFalse($subject->hasUnmatchedReports());
+        self::assertFalse($subject->hasUnmatchedOperations());
+    }
+
+    #[Framework\Attributes\Test]
+    public function mergeMergesOperationsFromOtherResultObjectWithCurrentResultObject(): void
+    {
+        $operation = Src\Result\WriteOperation::regenerated();
+
+        $other = new Src\Result\VersionBumpResult(
+            new Src\Config\FileToModify('foo'),
+            [
+                $operation,
+            ],
+        );
+
+        self::assertCount(5, $this->subject->operations());
+
+        $this->subject->merge($other);
+
+        self::assertCount(6, $this->subject->operations());
+        self::assertSame($operation, $this->subject->operations()[5]);
     }
 }

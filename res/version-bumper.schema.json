@@ -68,6 +68,20 @@
 					"type": "boolean",
 					"title": "Fail if file to modify does not exist",
 					"default": true
+				},
+				"preActions": {
+					"type": "array",
+					"title": "List of actions to execute before version bump happens",
+					"items": {
+						"type": "string"
+					}
+				},
+				"postActions": {
+					"type": "array",
+					"title": "List of actions to execute right after a successul version bump",
+					"items": {
+						"type": "string"
+					}
 				}
 			},
 			"additionalProperties": false,
@@ -118,7 +132,8 @@
 							"properties": {
 								"packageName": {
 									"type": "string",
-									"title": "NPM package name as defined in package.json"
+									"title": "NPM package name as defined in package.json",
+									"deprecationMessage": "Deprecated since v3.2.0: This option is no longer needed and should be omitted."
 								},
 								"path": {
 									"type": "string",

@@ -1,0 +1,20 @@
+{
+	"filesToModify": [
+		{
+			"path": "package.json",
+			"patterns": [
+				"\"version\": \"{%version%}\""
+			]
+		},
+		{
+			"path": "package-lock.json",
+			"patterns": [
+				"\"version\": \"{%version%}\""
+			],
+			"postActions": [
+				"package-lock"
+			]
+		}
+	],
+	"rootPath": "../RootPathTemp"
+}

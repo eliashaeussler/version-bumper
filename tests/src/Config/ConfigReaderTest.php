@@ -92,6 +92,9 @@ final class ConfigReaderTest extends Framework\TestCase
                     [
                         'baz: {%version%}',
                     ],
+                    postActions: [
+                        new Src\Version\Action\ComposerLockAction(),
+                    ],
                 ),
             ],
             rootPath: $rootPath,
@@ -112,6 +115,9 @@ final class ConfigReaderTest extends Framework\TestCase
                     'foo',
                     [
                         'baz: {%version%}',
+                    ],
+                    postActions: [
+                        new Src\Version\Action\ComposerLockAction(),
                     ],
                 ),
             ],
@@ -143,6 +149,9 @@ final class ConfigReaderTest extends Framework\TestCase
                     'foo',
                     [
                         'baz: {%version%}',
+                    ],
+                    postActions: [
+                        new Src\Version\Action\ComposerLockAction(),
                     ],
                 ),
             ],
@@ -176,6 +185,9 @@ final class ConfigReaderTest extends Framework\TestCase
                     'foo',
                     [
                         'baz: {%version%}',
+                    ],
+                    postActions: [
+                        new Src\Version\Action\ComposerLockAction(),
                     ],
                 ),
             ],
@@ -260,6 +272,11 @@ final class ConfigReaderTest extends Framework\TestCase
                             new Src\Config\FilePattern('"version": "{%version%}"'),
                         ],
                         true,
+                        true,
+                        [],
+                        [
+                            new Src\Version\Action\ComposerLockAction(),
+                        ],
                     ),
                 ],
                 $rootPath,
@@ -280,6 +297,11 @@ final class ConfigReaderTest extends Framework\TestCase
                             new Src\Config\FilePattern('"version": "{%version%}"'),
                         ],
                         true,
+                        true,
+                        [],
+                        [
+                            new Src\Version\Action\ComposerLockAction(),
+                        ],
                     ),
                 ],
                 $rootPath,
@@ -291,7 +313,6 @@ final class ConfigReaderTest extends Framework\TestCase
             new Src\Config\VersionBumperConfig(
                 [
                     new Src\Config\Preset\NpmPackagePreset([
-                        'packageName' => '@foo/baz',
                         'path' => 'foo',
                     ]),
                 ],
@@ -303,13 +324,11 @@ final class ConfigReaderTest extends Framework\TestCase
                             new Src\Config\FilePattern('"version": "{%version%}"'),
                         ],
                         true,
-                    ),
-                    new Src\Config\FileToModify(
-                        'foo/package-lock.json',
-                        [
-                            new Src\Config\FilePattern('"name": "@foo/baz",\s+"version": "{%version%}"'),
-                        ],
                         true,
+                        [],
+                        [
+                            new Src\Version\Action\PackageLockAction(),
+                        ],
                     ),
                 ],
                 $rootPath,
@@ -337,6 +356,11 @@ final class ConfigReaderTest extends Framework\TestCase
                             new Src\Config\FilePattern('"version": "{%version%}'),
                         ],
                         true,
+                        true,
+                        [],
+                        [
+                            new Src\Version\Action\ComposerLockAction(),
+                        ],
                     ),
                     new Src\Config\FileToModify(
                         'Documentation/guides.xml',
@@ -371,6 +395,11 @@ final class ConfigReaderTest extends Framework\TestCase
                             new Src\Config\FilePattern('"version": "{%version%}'),
                         ],
                         true,
+                        true,
+                        [],
+                        [
+                            new Src\Version\Action\ComposerLockAction(),
+                        ],
                     ),
                     new Src\Config\FileToModify(
                         'Documentation/guides.xml',

@@ -23,6 +23,8 @@ declare(strict_types=1);
 
 namespace EliasHaeussler\VersionBumper\Enum;
 
+use function in_array;
+
 /**
  * OperationState.
  *
@@ -32,6 +34,12 @@ namespace EliasHaeussler\VersionBumper\Enum;
 enum OperationState
 {
     case Modified;
+    case Regenerated;
     case Skipped;
     case Unmatched;
+
+    public function matched(): bool
+    {
+        return in_array($this, [self::Modified, self::Skipped], true);
+    }
 }

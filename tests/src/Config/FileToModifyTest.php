@@ -39,7 +39,15 @@ final class FileToModifyTest extends Framework\TestCase
 
     public function setUp(): void
     {
-        $this->subject = new Src\Config\FileToModify('foo');
+        $this->subject = new Src\Config\FileToModify(
+            'foo',
+            preActions: [
+                new Src\Version\Action\ComposerLockAction(),
+            ],
+            postActions: [
+                new Src\Version\Action\PackageLockAction(),
+            ],
+        );
     }
 
     #[Framework\Attributes\Test]
@@ -89,5 +97,33 @@ final class FileToModifyTest extends Framework\TestCase
 
         self::assertCount(1, $this->subject->patterns());
         self::assertSame($pattern, $this->subject->patterns()[0]);
+    }
+
+    #[Framework\Attributes\Test]
+    public function getActionsByTypeReturnsPreActions(): void
+    {
+        $expected = [
+            new Src\Version\Action\ComposerLockAction(),
+        ];
+
+        self::assertEquals($expected, $this->subject->getActionsByType(Src\Version\Action\ActionType::PreAction));
+    }
+
+    #[Framework\Attributes\Test]
+    public function getActionsByTypeReturnsPostActions(): void
+    {
+        $expected = [
+            new Src\Version\Action\PackageLockAction(),
+        ];
+
+        self::assertEquals($expected, $this->subject->getActionsByType(Src\Version\Action\ActionType::PostAction));
+    }
+
+    #[Framework\Attributes\Test]
+    public function equalsReturnsTrueIfFullPathOfTwoConfigObjectsIsEqual(): void
+    {
+        self::assertTrue($this->subject->equals(new Src\Config\FileToModify('foo'), '/baz'));
+        self::assertTrue($this->subject->equals(new Src\Config\FileToModify('baz/../foo'), '/baz'));
+        self::assertFalse($this->subject->equals(new Src\Config\FileToModify('baz'), '/baz'));
     }
 }

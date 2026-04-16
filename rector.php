@@ -22,7 +22,6 @@ declare(strict_types=1);
  */
 
 use EliasHaeussler\RectorConfig\Config\Config;
-use Rector\CodingStyle\Rector\FunctionLike\FunctionLikeToFirstClassCallableRector;
 use Rector\Config\RectorConfig;
 use Rector\Php81\Rector\FuncCall\NullToStrictStringFuncCallArgRector;
 use Rector\ValueObject\PhpVersion;
@@ -33,13 +32,13 @@ return static function (RectorConfig $rectorConfig): void {
             __DIR__.'/src',
             __DIR__.'/tests',
         )
+        ->not(
+            __DIR__.'/tests/src/Fixtures',
+        )
         ->withPHPUnit()
         ->withSymfony()
         ->skip(NullToStrictStringFuncCallArgRector::class, [
             'src/Command/BumpVersionCommand.php',
-        ])
-        ->skip(FunctionLikeToFirstClassCallableRector::class, [
-            'src/Config/ConfigReader.php',
         ])
         ->apply()
     ;

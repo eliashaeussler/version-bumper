@@ -23,19 +23,24 @@ declare(strict_types=1);
 
 namespace EliasHaeussler\VersionBumper\Exception;
 
+use EliasHaeussler\VersionBumper\Result;
+
+use function sprintf;
+
 /**
- * PackageNameIsMissing.
+ * ActionExecutionFailed.
  *
  * @author Elias Häußler <elias@haeussler.dev>
  * @license GPL-3.0-or-later
  */
-final class PackageNameIsMissing extends Exception
+final class ActionExecutionFailed extends Exception
 {
-    public function __construct(string $filename)
-    {
+    public function __construct(
+        public readonly Result\ActionExecutionResult $result,
+    ) {
         parent::__construct(
-            sprintf('Package name for "%s" is missing and cannot be determined automatically.', $filename),
-            1749044756,
+            sprintf('An error occurred while executing %s', $this->result->action()::getIdentifier()),
+            1776106542,
         );
     }
 }

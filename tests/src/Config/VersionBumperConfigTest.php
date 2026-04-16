@@ -49,6 +49,9 @@ final class VersionBumperConfigTest extends Framework\TestCase
                     [
                         'baz: {%version%}',
                     ],
+                    postActions: [
+                        new Src\Version\Action\ComposerLockAction(),
+                    ],
                 ),
             ],
             '/foo',
@@ -68,6 +71,18 @@ final class VersionBumperConfigTest extends Framework\TestCase
     }
 
     #[Framework\Attributes\Test]
+    public function hasActionsReturnsTrueIfAnyConfiguredFileHasActionsOfGivenType(): void
+    {
+        self::assertTrue($this->subject->hasActions(Src\Version\Action\ActionType::PostAction));
+        self::assertFalse($this->subject->hasActions(Src\Version\Action\ActionType::PreAction));
+
+        $subject = new Src\Config\VersionBumperConfig();
+
+        self::assertFalse($subject->hasActions(Src\Version\Action\ActionType::PreAction));
+        self::assertFalse($subject->hasActions(Src\Version\Action\ActionType::PostAction));
+    }
+
+    #[Framework\Attributes\Test]
     public function mergeSkipsDefaultValuesFromOtherConfig(): void
     {
         $other = new Src\Config\VersionBumperConfig(releaseOptions: new Src\Config\ReleaseOptions());
@@ -80,20 +95,23 @@ final class VersionBumperConfigTest extends Framework\TestCase
     {
         $other = new Src\Config\VersionBumperConfig(
             [
-                new Src\Config\Preset\NpmPackagePreset(['packageName' => '@foo/baz']),
+                new Src\Config\Preset\NpmPackagePreset(['path' => 'Build/Frontend']),
             ],
         );
 
         $expected = new Src\Config\VersionBumperConfig(
             [
                 new Src\Config\Preset\Typo3ExtensionPreset(),
-                new Src\Config\Preset\NpmPackagePreset(['packageName' => '@foo/baz']),
+                new Src\Config\Preset\NpmPackagePreset(['path' => 'Build/Frontend']),
             ],
             [
                 new Src\Config\FileToModify(
                     'foo',
                     [
                         'baz: {%version%}',
+                    ],
+                    postActions: [
+                        new Src\Version\Action\ComposerLockAction(),
                     ],
                 ),
             ],
@@ -131,6 +149,9 @@ final class VersionBumperConfigTest extends Framework\TestCase
                     'foo',
                     [
                         'baz: {%version%}',
+                    ],
+                    postActions: [
+                        new Src\Version\Action\ComposerLockAction(),
                     ],
                 ),
             ],
