@@ -42,7 +42,7 @@ use function count;
  *
  * @implements IteratorAggregate<Action>
  */
-final class ActionCollection implements Action, Countable, IteratorAggregate
+final readonly class ActionCollection implements Action, Countable, IteratorAggregate
 {
     /**
      * @param list<Action> $actions
@@ -92,16 +92,6 @@ final class ActionCollection implements Action, Countable, IteratorAggregate
     public function actions(): array
     {
         return $this->actions;
-    }
-
-    /**
-     * @impure
-     */
-    public function add(Action $action): self
-    {
-        $this->actions[] = $action;
-
-        return $this;
     }
 
     public function count(): int

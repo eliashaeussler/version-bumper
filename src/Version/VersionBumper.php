@@ -40,7 +40,7 @@ use function substr_replace;
  * @author Elias Häußler <elias@haeussler.dev>
  * @license GPL-3.0-or-later
  */
-final class VersionBumper
+final readonly class VersionBumper
 {
     /**
      * @param list<Config\FileToModify> $files
