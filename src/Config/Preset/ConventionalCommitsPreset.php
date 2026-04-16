@@ -34,7 +34,7 @@ use EliasHaeussler\VersionBumper\Enum;
  *
  * @see https://www.conventionalcommits.org/en/v1.0.0/
  */
-final class ConventionalCommitsPreset implements Preset
+final readonly class ConventionalCommitsPreset implements Preset
 {
     public function getConfig(?Config\VersionBumperConfig $rootConfig = null): Config\VersionBumperConfig
     {

@@ -38,7 +38,7 @@ use function str_replace;
  *
  * @internal
  */
-final class VersionHelper
+final readonly class VersionHelper
 {
     private const VERSION_PLACEHOLDER = '{%version%}';
     private const VERSION_REGEX = '(?P<version>v?\\d+\\.\\d+\\.\\d+)';

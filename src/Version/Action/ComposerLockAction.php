@@ -43,7 +43,7 @@ use function is_string;
  * @author Elias Häußler <elias@haeussler.dev>
  * @license GPL-3.0-or-later
  */
-final class ComposerLockAction implements Action
+final readonly class ComposerLockAction implements Action
 {
     /**
      * @throws Exception\FilePatternIsInvalid

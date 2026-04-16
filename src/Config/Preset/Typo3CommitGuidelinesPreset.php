@@ -34,7 +34,7 @@ use EliasHaeussler\VersionBumper\Enum;
  *
  * @see https://docs.typo3.org/m/typo3/guide-contributionworkflow/main/en-us/Appendix/CommitMessage.html
  */
-final class Typo3CommitGuidelinesPreset implements Preset
+final readonly class Typo3CommitGuidelinesPreset implements Preset
 {
     public function getConfig(?Config\VersionBumperConfig $rootConfig = null): Config\VersionBumperConfig
     {
