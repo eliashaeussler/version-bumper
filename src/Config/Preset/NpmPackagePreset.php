@@ -83,6 +83,7 @@ final class NpmPackagePreset extends BasePreset
         $optionsResolver->define('packageName')
             ->allowedTypes('string', 'null')
             ->default(null)
+            // @todo Remove with v5 of the library
             ->deprecated(
                 'eliashaeussler/version-bumper',
                 '3.2.0',
