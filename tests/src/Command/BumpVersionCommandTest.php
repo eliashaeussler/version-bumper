@@ -539,6 +539,24 @@ final class BumpVersionCommandTest extends Framework\TestCase
     }
 
     #[Framework\Attributes\Test]
+    public function executeCollectsAndDisplaysDeprecatedConfigOptions(): void
+    {
+        $configFile = dirname(__DIR__).'/Fixtures/ConfigFiles/valid-config-with-deprecated-config.json';
+
+        $this->commandTester->execute([
+            'range' => '2.0.0',
+            '--config' => $configFile,
+            '--dry-run' => true,
+        ]);
+
+        $output = $this->commandTester->getDisplay();
+
+        self::assertSame(Console\Command\Command::SUCCESS, $this->commandTester->getStatusCode());
+        self::assertStringContainsString('Your config file contains deprecated options.', $output);
+        self::assertStringContainsString('The option "packageName" is no longer needed and should be omitted.', $output);
+    }
+
+    #[Framework\Attributes\Test]
     public function executeUpdatesComposerLockFileIfRequested(): void
     {
         $filesystem = new Filesystem\Filesystem();

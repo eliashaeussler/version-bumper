@@ -1,0 +1,11 @@
+{
+	"presets": [
+		{
+			"name": "npm-package",
+			"options": {
+				"packageName": "@foo/baz"
+			}
+		}
+	],
+	"rootPath": "../RootPath"
+}
