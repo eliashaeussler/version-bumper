@@ -29,6 +29,7 @@ use CuyZ\Valinor;
 use EliasHaeussler\TaskRunner;
 use EliasHaeussler\VersionBumper\Config;
 use EliasHaeussler\VersionBumper\Enum;
+use EliasHaeussler\VersionBumper\Error;
 use EliasHaeussler\VersionBumper\Exception;
 use EliasHaeussler\VersionBumper\Result;
 use EliasHaeussler\VersionBumper\Version;
@@ -46,6 +47,8 @@ use function implode;
 use function is_string;
 use function method_exists;
 use function reset;
+use function restore_error_handler;
+use function set_error_handler;
 use function sprintf;
 use function trim;
 use function usort;
@@ -64,6 +67,11 @@ final class BumpVersionCommand extends Command\BaseCommand
     private readonly Version\VersionReleaser $releaser;
     private Console\Style\SymfonyStyle $io;
     private TaskRunner\TaskRunner $taskRunner;
+
+    /**
+     * @var list<Error\DeprecationMessage>
+     */
+    private array $deprecations = [];
 
     public function __construct(
         ?Composer $composer = null,
@@ -126,6 +134,7 @@ final class BumpVersionCommand extends Command\BaseCommand
     {
         $this->io = new Console\Style\SymfonyStyle($input, $output);
         $this->taskRunner = new TaskRunner\TaskRunner($this->io);
+        $this->deprecations = [];
     }
 
     protected function execute(Console\Input\InputInterface $input, Console\Output\OutputInterface $output): int
@@ -148,6 +157,9 @@ final class BumpVersionCommand extends Command\BaseCommand
         } else {
             $rootPath = dirname($configFile);
         }
+
+        // Register custom error handler to collect deprecations from config presets
+        set_error_handler($this->collectDeprecations(...), E_USER_DEPRECATED);
 
         try {
             $config = $this->configReader->readFromFile($configFile);
@@ -177,9 +189,14 @@ final class BumpVersionCommand extends Command\BaseCommand
 
             return self::FAILURE;
         } finally {
+            // Restore original error handler
+            restore_error_handler();
+
             if ($dryRun) {
                 $this->io->note('No write operations were performed (dry-run mode).');
             }
+
+            $this->decorateDeprecationMessages();
         }
 
         if ($strict) {
@@ -372,6 +389,30 @@ final class BumpVersionCommand extends Command\BaseCommand
         }
     }
 
+    private function decorateDeprecationMessages(): void
+    {
+        if ([] === $this->deprecations) {
+            return;
+        }
+
+        $this->io->warning('Your config file contains deprecated options.');
+
+        $this->io->listing(
+            array_map(
+                static fn (Error\DeprecationMessage $deprecation) => implode('', [
+                    $deprecation->origin() instanceof Config\Preset\Preset
+                        ? sprintf('<fg=yellow>%s</>: ', $deprecation->origin()::getIdentifier())
+                        : '',
+                    $deprecation->message(),
+                    null !== $deprecation->since()
+                        ? sprintf(' <fg=yellow>(deprecated since v%s)</>', $deprecation->since())
+                        : '',
+                ]),
+                $this->deprecations,
+            ),
+        );
+    }
+
     /**
      * @param list<Config\Preset\Preset> $presets
      */
@@ -512,6 +553,18 @@ final class BumpVersionCommand extends Command\BaseCommand
         }
 
         return null;
+    }
+
+    private function collectDeprecations(int $errno, string $errstr): bool
+    {
+        $deprecationMessage = Error\DeprecationMessage::fromTraceOrMessage($errstr);
+        $collected = null !== $deprecationMessage;
+
+        if ($collected) {
+            $this->deprecations[] = $deprecationMessage;
+        }
+
+        return $collected;
     }
 
     private function getComposerInstance(): ?Composer
