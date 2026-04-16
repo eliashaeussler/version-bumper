@@ -83,10 +83,12 @@ final class BumpVersionCommand extends Command\BaseCommand
 
         parent::__construct('bump-version');
 
-        $this->bumper = new Version\VersionBumper();
-        $this->configReader = new Config\ConfigReader();
-        $this->versionRangeDetector = new Version\VersionRangeDetector($caller);
-        $this->releaser = new Version\VersionReleaser($caller);
+        $eventDispatcher = $this->getComposerInstance()?->getEventDispatcher();
+
+        $this->bumper = new Version\VersionBumper($eventDispatcher);
+        $this->configReader = new Config\ConfigReader($eventDispatcher);
+        $this->versionRangeDetector = new Version\VersionRangeDetector($caller, $eventDispatcher);
+        $this->releaser = new Version\VersionReleaser($caller, $eventDispatcher);
     }
 
     protected function configure(): void
