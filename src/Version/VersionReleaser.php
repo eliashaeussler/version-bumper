@@ -23,8 +23,10 @@ declare(strict_types=1);
 
 namespace EliasHaeussler\VersionBumper\Version;
 
+use Composer\EventDispatcher;
 use EliasHaeussler\VersionBumper\Config;
 use EliasHaeussler\VersionBumper\Enum;
+use EliasHaeussler\VersionBumper\Event;
 use EliasHaeussler\VersionBumper\Exception;
 use EliasHaeussler\VersionBumper\Helper;
 use EliasHaeussler\VersionBumper\Result;
@@ -41,8 +43,11 @@ use function in_array;
  */
 final readonly class VersionReleaser
 {
+    use Event\Dispatchable;
+
     public function __construct(
         private ?Command\Caller\CallerInterface $caller = null,
+        private ?EventDispatcher\EventDispatcher $eventDispatcher = null,
     ) {}
 
     /**
@@ -71,6 +76,10 @@ final readonly class VersionReleaser
         if ([] === $modifiedFiles) {
             throw new Exception\NoModifiedFilesFound();
         }
+
+        $this->dispatchEvent(
+            new Event\VersionReleasePrepared($results, $modifiedFiles, $options, $version),
+        );
 
         $repository = new Repository($rootPath);
         $commitMessage = Helper\VersionHelper::replaceVersionInPattern($options->commitMessage(), $version);
@@ -113,7 +122,13 @@ final readonly class VersionReleaser
             $commitId = $tag->getSha();
         }
 
-        return new Result\VersionReleaseResult($modifiedFiles, $commitMessage, $tagName, $commitId);
+        $result = new Result\VersionReleaseResult($modifiedFiles, $commitMessage, $tagName, $commitId);
+
+        $this->dispatchEvent(
+            new Event\VersionReleaseCreated($result),
+        );
+
+        return $result;
     }
 
     /**

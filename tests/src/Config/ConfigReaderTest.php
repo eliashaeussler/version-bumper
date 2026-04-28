@@ -23,6 +23,7 @@ declare(strict_types=1);
 
 namespace EliasHaeussler\VersionBumper\Tests\Config;
 
+use Composer\EventDispatcher;
 use CuyZ\Valinor;
 use EliasHaeussler\VersionBumper as Src;
 use Generator;
@@ -226,6 +227,40 @@ final class ConfigReaderTest extends Framework\TestCase
         $file = $rootPath.'/valid-config-with-'.$preset.'-preset.json';
 
         self::assertEquals($expected, $this->subject->readFromFile($file));
+    }
+
+    #[Framework\Attributes\Test]
+    public function readFromFileDispatchesConfigResolvedEvent(): void
+    {
+        $eventDispatcher = $this->createMock(EventDispatcher\EventDispatcher::class);
+        $subject = new Src\Config\ConfigReader($eventDispatcher);
+
+        $rootPath = dirname(__DIR__).'/Fixtures';
+        $file = $rootPath.'/ConfigFiles/valid-config.yaml';
+
+        $expected = new Src\Event\ConfigResolved(
+            new Src\Config\VersionBumperConfig(
+                filesToModify: [
+                    new Src\Config\FileToModify(
+                        'foo',
+                        [
+                            'baz: {%version%}',
+                        ],
+                        postActions: [
+                            new Src\Version\Action\ComposerLockAction(),
+                        ],
+                    ),
+                ],
+                rootPath: $rootPath,
+            ),
+        );
+
+        $eventDispatcher->expects(self::once())
+            ->method('dispatch')
+            ->with('version-bumper-config-resolved', $expected)
+        ;
+
+        $subject->readFromFile($file);
     }
 
     #[Framework\Attributes\Test]

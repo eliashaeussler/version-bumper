@@ -23,8 +23,10 @@ declare(strict_types=1);
 
 namespace EliasHaeussler\VersionBumper\Version;
 
+use Composer\EventDispatcher;
 use EliasHaeussler\VersionBumper\Config;
 use EliasHaeussler\VersionBumper\Enum;
+use EliasHaeussler\VersionBumper\Event;
 use EliasHaeussler\VersionBumper\Exception;
 use EliasHaeussler\VersionBumper\Helper;
 use GitElephant\Command;
@@ -48,8 +50,11 @@ use function version_compare;
  */
 final readonly class VersionRangeDetector
 {
+    use Event\Dispatchable;
+
     public function __construct(
         private ?Command\Caller\CallerInterface $caller = null,
+        private ?EventDispatcher\EventDispatcher $eventDispatcher = null,
     ) {}
 
     /**
@@ -87,13 +92,17 @@ final readonly class VersionRangeDetector
             new RangeDetection\DiffRangeDetection($diff),
         ];
 
+        $event = $this->dispatchEvent(
+            new Event\VersionRangeDetectionPrepared($rootPath, $indicators, $since, $detectors),
+        );
+
         foreach ($indicators as $indicator) {
             $matchedRangeDetections = 0;
             $unmatchedRangeDetections = 0;
 
             // Evaluate all configured patterns
             foreach ($indicator->patterns() as $pattern) {
-                foreach ($detectors as $detector) {
+                foreach ($event->detectors() as $detector) {
                     if (!$detector->supports($pattern)) {
                         continue;
                     }
@@ -119,11 +128,19 @@ final readonly class VersionRangeDetector
             }
         }
 
-        if ([] !== $detectedRanges) {
-            return Enum\VersionRange::getHighest(...$detectedRanges);
+        if ([] === $detectedRanges) {
+            return null;
         }
 
-        return null;
+        $versionRange = Enum\VersionRange::getHighest(...$detectedRanges);
+
+        if (null !== $versionRange) {
+            $this->dispatchEvent(
+                new Event\VersionRangeDetected($versionRange),
+            );
+        }
+
+        return $versionRange;
     }
 
     /**
