@@ -24,7 +24,6 @@ declare(strict_types=1);
 namespace EliasHaeussler\VersionBumper\Version;
 
 use EliasHaeussler\VersionBumper\Config;
-use EliasHaeussler\VersionBumper\Enum;
 use EliasHaeussler\VersionBumper\Exception;
 use EliasHaeussler\VersionBumper\Helper;
 use EliasHaeussler\VersionBumper\Result;
@@ -157,9 +156,7 @@ final readonly class VersionReleaser
 
         foreach ($results as $result) {
             foreach ($result->operations() as $operation) {
-                if (Enum\OperationState::Modified === $operation->state()
-                    && !in_array($result->file(), $modifiedFiles, true)
-                ) {
+                if ($operation->state()->modified() && !in_array($result->file(), $modifiedFiles, true)) {
                     $modifiedFiles[] = $result->file();
                 }
             }

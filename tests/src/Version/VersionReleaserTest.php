@@ -278,6 +278,47 @@ final class VersionReleaserTest extends Framework\TestCase
     }
 
     #[Framework\Attributes\Test]
+    public function releaseCreatesCommitAndTag(): void
+    {
+        $this->caller->results = [
+            ['', 'tag'],
+            ['', "add '--all' 'composer.json'"],
+            ['', "add '--all' 'composer-lock.json'"],
+            ['', "commit '-m' 'Release 2.0.0'"],
+            ['', "tag '-m' '2.0.0' '2.0.0'"],
+            ['2.0.0', 'tag'],
+            ['2.0.0', 'tag'],
+            ['cf79760440d4a34c85cf9ceeefbf2140fad04eb1', "rev-list '-n1' 'refs/tags/2.0.0'"],
+        ];
+
+        $this->results[] = new Src\Result\VersionBumpResult(
+            new Src\Config\FileToModify('composer-lock.json'),
+            [
+                Src\Result\WriteOperation::regenerated(),
+            ],
+        );
+
+        $expected = new Src\Result\VersionReleaseResult(
+            [
+                $this->results[0]->file(),
+                $this->results[1]->file(),
+            ],
+            'Release 2.0.0',
+            '2.0.0',
+            'cf79760440d4a34c85cf9ceeefbf2140fad04eb1',
+        );
+
+        self::assertEquals(
+            $expected,
+            $this->subject->release(
+                $this->results,
+                dirname(__DIR__, 3),
+                new Src\Config\ReleaseOptions(),
+            ),
+        );
+    }
+
+    #[Framework\Attributes\Test]
     public function releaseDoesNotPerformAnyWriteOperationsInDryRunMode(): void
     {
         $this->caller->results = [
