@@ -28,6 +28,7 @@ use EliasHaeussler\VersionBumper\Version;
 use Symfony\Component\OptionsResolver;
 
 use function in_array;
+use function is_file;
 
 /**
  * Typo3ExtensionPreset.
@@ -49,23 +50,34 @@ final class Typo3ExtensionPreset extends BasePreset
 
     public function getConfig(?Config\VersionBumperConfig $rootConfig = null): Config\VersionBumperConfig
     {
-        $reportMissingFile = self::AUTO_KEYWORD !== $this->options['documentation'];
+        $reportMissingDocsFile = self::AUTO_KEYWORD !== $this->options['documentation'];
+        $reportUnmatchedComposerVersion = true;
+        $extEmConf = new Config\FileToModify(
+            'ext_emconf.php',
+            [
+                new Config\FilePattern("'version' => '{%version%}'"),
+            ],
+            true,
+        );
+
+        // Don't report missing version pattern in composer.json file if an ext_emconf.php file
+        // still exists (this reflects a compatibility behavior of extensions which support
+        // multiple TYPO3 LTS versions, e.g. v13 and v14)
+        if (null !== $rootConfig?->rootPath() && is_file($extEmConf->fullPath($rootConfig->rootPath()))) {
+            $reportUnmatchedComposerVersion = false;
+        }
+
         $filesToModify = [
-            new Config\FileToModify(
-                'ext_emconf.php',
-                [
-                    new Config\FilePattern("'version' => '{%version%}'"),
-                ],
-                true,
-            ),
+            $extEmConf,
             // https://docs.typo3.org/c/typo3/cms-core/main/en-us/Changelog/14.2/Feature-108345-No-ext-em-conf-in-classic-mode.html#extension-version
             new Config\FileToModify(
                 'composer.json',
                 [
-                    // Missing trailing quote is intended to allow and retain version suffixes (e.g. "1.0.0-dev" or "1.0.0+obsolete")
+                    // Missing trailing quote is intended to allow and retain version suffixes
+                    // (e.g. "1.0.0-dev" or "1.0.0+obsolete")
                     new Config\FilePattern('"version": "{%version%}'),
                 ],
-                true,
+                $reportUnmatchedComposerVersion,
                 true,
                 [],
                 [
@@ -82,7 +94,7 @@ final class Typo3ExtensionPreset extends BasePreset
                     new Config\FilePattern('release="{%version%}"'),
                 ],
                 true,
-                $reportMissingFile,
+                $reportMissingDocsFile,
             );
         }
 
@@ -94,7 +106,7 @@ final class Typo3ExtensionPreset extends BasePreset
                     new Config\FilePattern('release = {%version%}'),
                 ],
                 true,
-                $reportMissingFile,
+                $reportMissingDocsFile,
             );
         }
 
