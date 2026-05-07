@@ -42,4 +42,9 @@ enum OperationState
     {
         return in_array($this, [self::Modified, self::Skipped], true);
     }
+
+    public function modified(): bool
+    {
+        return in_array($this, [self::Modified, self::Regenerated], true);
+    }
 }

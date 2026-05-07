@@ -43,4 +43,13 @@ final class OperationStateTest extends Framework\TestCase
         self::assertFalse(Src\Enum\OperationState::Regenerated->matched());
         self::assertFalse(Src\Enum\OperationState::Unmatched->matched());
     }
+
+    #[Framework\Attributes\Test]
+    public function modifiedReturnsTrueOnModifiedAndRegeneratedState(): void
+    {
+        self::assertTrue(Src\Enum\OperationState::Modified->modified());
+        self::assertFalse(Src\Enum\OperationState::Skipped->modified());
+        self::assertTrue(Src\Enum\OperationState::Regenerated->modified());
+        self::assertFalse(Src\Enum\OperationState::Unmatched->modified());
+    }
 }
