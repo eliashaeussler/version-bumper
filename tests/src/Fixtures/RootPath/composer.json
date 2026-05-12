@@ -2,6 +2,7 @@
 	"version": "1.0.0",
 	"extra": {
 		"typo3/cms": {
+			"extension-key": "foo",
 			"version": "1.0.0+obsolete"
 		}
 	}

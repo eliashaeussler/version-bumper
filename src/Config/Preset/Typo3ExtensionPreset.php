@@ -23,12 +23,17 @@ declare(strict_types=1);
 
 namespace EliasHaeussler\VersionBumper\Config\Preset;
 
+use Composer\Factory;
+use Composer\IO;
 use EliasHaeussler\VersionBumper\Config;
 use EliasHaeussler\VersionBumper\Version;
 use Symfony\Component\OptionsResolver;
+use Throwable;
 
 use function in_array;
 use function is_file;
+use function is_string;
+use function sprintf;
 
 /**
  * Typo3ExtensionPreset.
@@ -67,24 +72,23 @@ final class Typo3ExtensionPreset extends BasePreset
             $reportUnmatchedComposerVersion = false;
         }
 
-        $filesToModify = [
-            $extEmConf,
-            // https://docs.typo3.org/c/typo3/cms-core/main/en-us/Changelog/14.2/Feature-108345-No-ext-em-conf-in-classic-mode.html#extension-version
-            new Config\FileToModify(
-                'composer.json',
-                [
-                    // Missing trailing quote is intended to allow and retain version suffixes
-                    // (e.g. "1.0.0-dev" or "1.0.0+obsolete")
-                    new Config\FilePattern('"version": "{%version%}'),
-                ],
-                $reportUnmatchedComposerVersion,
-                true,
-                [],
-                [
-                    new Version\Action\ComposerLockAction(),
-                ],
-            ),
-        ];
+        // https://docs.typo3.org/c/typo3/cms-core/main/en-us/Changelog/14.2/Feature-108345-No-ext-em-conf-in-classic-mode.html#extension-version
+        $composerJson = new Config\FileToModify(
+            'composer.json',
+            [
+                // Missing trailing quote is intended to allow and retain version suffixes
+                // (e.g. "1.0.0-dev" or "1.0.0+obsolete")
+                new Config\FilePattern('"version": "{%version%}'),
+            ],
+            $reportUnmatchedComposerVersion,
+            true,
+            [],
+            [
+                new Version\Action\ComposerLockAction(),
+            ],
+        );
+
+        $filesToModify = [$extEmConf, $composerJson];
 
         // New PHP-based documentation rendering
         if (in_array($this->options['documentation'], [self::AUTO_KEYWORD, true], true)) {
@@ -110,7 +114,52 @@ final class Typo3ExtensionPreset extends BasePreset
             );
         }
 
-        return new Config\VersionBumperConfig(filesToModify: $filesToModify);
+        return new Config\VersionBumperConfig(
+            filesToModify: $filesToModify,
+            releaseOptions: $this->buildReleaseOptions($composerJson, $rootConfig) ?? new Config\ReleaseOptions(),
+        );
+    }
+
+    private function buildReleaseOptions(
+        Config\FileToModify $composerJson,
+        ?Config\VersionBumperConfig $rootConfig,
+    ): ?Config\ReleaseOptions {
+        if (null === $rootConfig || null === $rootConfig->rootPath()) {
+            return null;
+        }
+
+        $extensionKey = $this->extractExtensionKeyFromComposerJson($composerJson->fullPath($rootConfig->rootPath()));
+
+        if (null === $extensionKey) {
+            return null;
+        }
+
+        return new Config\ReleaseOptions(
+            sprintf('[RELEASE] Release of EXT:%s {%%version%%}', $extensionKey),
+        );
+    }
+
+    private function extractExtensionKeyFromComposerJson(string $path): ?string
+    {
+        if (!is_file($path)) {
+            return null;
+        }
+
+        // Build Composer instance
+        try {
+            $composer = Factory::create(new IO\NullIO(), $path, true, true);
+        } catch (Throwable) {
+            return null;
+        }
+
+        // Parse extension key
+        $extensionKey = $composer->getPackage()->getExtra()['typo3/cms']['extension-key'] ?? null;
+
+        if (!is_string($extensionKey)) {
+            return null;
+        }
+
+        return $extensionKey;
     }
 
     public static function getIdentifier(): string

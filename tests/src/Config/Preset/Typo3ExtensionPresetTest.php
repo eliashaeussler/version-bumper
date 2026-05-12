@@ -228,6 +228,7 @@ final class Typo3ExtensionPresetTest extends Framework\TestCase
                     'version' => '1.1.0',
                     'extra' => [
                         'typo3/cms' => [
+                            'extension-key' => 'foo',
                             'version' => '1.1.0+obsolete',
                         ],
                     ],
@@ -242,5 +243,16 @@ final class Typo3ExtensionPresetTest extends Framework\TestCase
         } finally {
             file_put_contents($composerFile->fullPath($rootPath), $contentBackup);
         }
+    }
+
+    #[Framework\Attributes\Test]
+    public function getConfigReturnsConfigWithCustomCommitMessageInReleaseOptions(): void
+    {
+        $rootPath = dirname(__DIR__, 2).'/Fixtures/RootPath';
+        $rootConfig = new Src\Config\VersionBumperConfig(rootPath: $rootPath);
+
+        $expected = new Src\Config\ReleaseOptions('[RELEASE] Release of EXT:foo {%version%}');
+
+        self::assertEquals($expected, $this->subject->getConfig($rootConfig)->releaseOptions());
     }
 }
