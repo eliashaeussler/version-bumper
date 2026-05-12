@@ -5,6 +5,6 @@
 		"local>eliashaeussler/renovate-config:composer-plugin"
 	],
 	"constraints": {
-		"php": "8.2.*"
+		"php": "8.5.*"
 	}
 }
