@@ -371,6 +371,7 @@ final class ConfigReaderTest extends Framework\TestCase
                     ),
                 ],
                 $rootPath,
+                new Src\Config\ReleaseOptions('[RELEASE] Release of EXT:foo {%version%}'),
             ),
         ];
 
@@ -419,6 +420,7 @@ final class ConfigReaderTest extends Framework\TestCase
                     ),
                 ],
                 $rootPath,
+                new Src\Config\ReleaseOptions('[RELEASE] Release of EXT:foo {%version%}'),
             ),
         ];
     }
