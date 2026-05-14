@@ -36,6 +36,16 @@ use PHPUnit\Framework;
 #[Framework\Attributes\CoversClass(Src\Helper\VersionHelper::class)]
 final class VersionHelperTest extends Framework\TestCase
 {
+    /**
+     * @return Generator<string, array{string, bool}>
+     */
+    public static function isValidVersionReturnsTrueIfGivenVersionIsValidDataProvider(): Generator
+    {
+        yield 'valid version' => ['1.2.3', true];
+        yield 'valid version with prefix' => ['v1.2.3', true];
+        yield 'invalid version' => ['1.2.3-beta.1', false];
+    }
+
     #[Framework\Attributes\Test]
     #[Framework\Attributes\DataProvider('isValidVersionReturnsTrueIfGivenVersionIsValidDataProvider')]
     public function isValidVersionReturnsTrueIfGivenVersionIsValid(string $version, bool $expected): void
@@ -68,15 +78,5 @@ final class VersionHelperTest extends Framework\TestCase
             'foo/foo: 1.2.3',
             Src\Helper\VersionHelper::replaceVersionInPattern('foo/foo: {%version%}', $version),
         );
-    }
-
-    /**
-     * @return Generator<string, array{string, bool}>
-     */
-    public static function isValidVersionReturnsTrueIfGivenVersionIsValidDataProvider(): Generator
-    {
-        yield 'valid version' => ['1.2.3', true];
-        yield 'valid version with prefix' => ['v1.2.3', true];
-        yield 'invalid version' => ['1.2.3-beta.1', false];
     }
 }

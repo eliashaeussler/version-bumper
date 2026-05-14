@@ -46,11 +46,33 @@ final class VersionRangeTest extends Framework\TestCase
         Src\Enum\VersionRange::fromInput('foo');
     }
 
+    /**
+     * @return Generator<string, array{string, Src\Enum\VersionRange}>
+     */
+    public static function fromInputSupportsShortRangesDataProvider(): Generator
+    {
+        yield 'major as maj' => ['maj', Src\Enum\VersionRange::Major];
+        yield 'minor as min' => ['min', Src\Enum\VersionRange::Minor];
+        yield 'next as n' => ['n', Src\Enum\VersionRange::Next];
+        yield 'patch as p' => ['p', Src\Enum\VersionRange::Patch];
+    }
+
     #[Framework\Attributes\Test]
     #[Framework\Attributes\DataProvider('fromInputSupportsShortRangesDataProvider')]
     public function fromInputSupportsShortRanges(string $input, Src\Enum\VersionRange $expected): void
     {
         self::assertSame($expected, Src\Enum\VersionRange::fromInput($input));
+    }
+
+    /**
+     * @return Generator<string, array{string, Src\Enum\VersionRange}>
+     */
+    public static function fromInputSupportedDefaultRangesDataProvider(): Generator
+    {
+        yield 'major' => ['major', Src\Enum\VersionRange::Major];
+        yield 'minor' => ['minor', Src\Enum\VersionRange::Minor];
+        yield 'next' => ['next', Src\Enum\VersionRange::Next];
+        yield 'patch' => ['patch', Src\Enum\VersionRange::Patch];
     }
 
     #[Framework\Attributes\Test]
@@ -96,40 +118,6 @@ final class VersionRangeTest extends Framework\TestCase
     }
 
     /**
-     * @param list<Src\Enum\VersionRange> $ranges
-     */
-    #[Framework\Attributes\Test]
-    #[Framework\Attributes\DataProvider('getHighestReturnsVersionRangeWithHighestPriorityDataProvider')]
-    public function getHighestReturnsVersionRangeWithHighestPriority(
-        array $ranges,
-        Src\Enum\VersionRange $expected,
-    ): void {
-        self::assertSame($expected, Src\Enum\VersionRange::getHighest(...$ranges));
-    }
-
-    /**
-     * @return Generator<string, array{string, Src\Enum\VersionRange}>
-     */
-    public static function fromInputSupportsShortRangesDataProvider(): Generator
-    {
-        yield 'major as maj' => ['maj', Src\Enum\VersionRange::Major];
-        yield 'minor as min' => ['min', Src\Enum\VersionRange::Minor];
-        yield 'next as n' => ['n', Src\Enum\VersionRange::Next];
-        yield 'patch as p' => ['p', Src\Enum\VersionRange::Patch];
-    }
-
-    /**
-     * @return Generator<string, array{string, Src\Enum\VersionRange}>
-     */
-    public static function fromInputSupportedDefaultRangesDataProvider(): Generator
-    {
-        yield 'major' => ['major', Src\Enum\VersionRange::Major];
-        yield 'minor' => ['minor', Src\Enum\VersionRange::Minor];
-        yield 'next' => ['next', Src\Enum\VersionRange::Next];
-        yield 'patch' => ['patch', Src\Enum\VersionRange::Patch];
-    }
-
-    /**
      * @return Generator<string, array{list<Src\Enum\VersionRange>, Src\Enum\VersionRange}>
      */
     public static function getHighestReturnsVersionRangeWithHighestPriorityDataProvider(): Generator
@@ -143,5 +131,17 @@ final class VersionRangeTest extends Framework\TestCase
         yield 'minor' => [[$next, $minor, $patch], $minor];
         yield 'next' => [[$next, $patch, $next], $next];
         yield 'patch' => [[$next, $next, $patch], $patch];
+    }
+
+    /**
+     * @param list<Src\Enum\VersionRange> $ranges
+     */
+    #[Framework\Attributes\Test]
+    #[Framework\Attributes\DataProvider('getHighestReturnsVersionRangeWithHighestPriorityDataProvider')]
+    public function getHighestReturnsVersionRangeWithHighestPriority(
+        array $ranges,
+        Src\Enum\VersionRange $expected,
+    ): void {
+        self::assertSame($expected, Src\Enum\VersionRange::getHighest(...$ranges));
     }
 }

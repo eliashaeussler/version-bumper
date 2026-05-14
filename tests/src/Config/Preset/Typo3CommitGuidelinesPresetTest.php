@@ -82,6 +82,18 @@ final class Typo3CommitGuidelinesPresetTest extends Framework\TestCase
         self::assertEquals($expected, $this->subject->getConfig());
     }
 
+    /**
+     * @return Generator<string, array{string, Src\Enum\VersionRange}>
+     */
+    public static function getConfigReturnsConfigWithVersionRangeIndicatorsDataProvider(): Generator
+    {
+        yield 'breaking change' => ['[!!!][FEATURE] Add breaking feature', Src\Enum\VersionRange::Major];
+        yield 'feature' => ['[FEATURE] Add non-breaking feature', Src\Enum\VersionRange::Minor];
+        yield 'bugfix' => ['[BUGFIX] Fix something', Src\Enum\VersionRange::Patch];
+        yield 'documentation' => ['[DOCS] Document something', Src\Enum\VersionRange::Patch];
+        yield 'task' => ['[TASK] Do something', Src\Enum\VersionRange::Patch];
+    }
+
     #[Framework\Attributes\Test]
     #[Framework\Attributes\DataProvider('getConfigReturnsConfigWithVersionRangeIndicatorsDataProvider')]
     public function getConfigReturnsConfigWithVersionRangeIndicators(
@@ -116,17 +128,5 @@ final class Typo3CommitGuidelinesPresetTest extends Framework\TestCase
         $actual = $versionRangeDetector->detect(__DIR__, $indicators, '1.2.0');
 
         self::assertSame($expected, $actual);
-    }
-
-    /**
-     * @return Generator<string, array{string, Src\Enum\VersionRange}>
-     */
-    public static function getConfigReturnsConfigWithVersionRangeIndicatorsDataProvider(): Generator
-    {
-        yield 'breaking change' => ['[!!!][FEATURE] Add breaking feature', Src\Enum\VersionRange::Major];
-        yield 'feature' => ['[FEATURE] Add non-breaking feature', Src\Enum\VersionRange::Minor];
-        yield 'bugfix' => ['[BUGFIX] Fix something', Src\Enum\VersionRange::Patch];
-        yield 'documentation' => ['[DOCS] Document something', Src\Enum\VersionRange::Patch];
-        yield 'task' => ['[TASK] Do something', Src\Enum\VersionRange::Patch];
     }
 }

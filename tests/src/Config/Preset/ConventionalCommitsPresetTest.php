@@ -84,6 +84,35 @@ final class ConventionalCommitsPresetTest extends Framework\TestCase
         self::assertEquals($expected, $this->subject->getConfig());
     }
 
+    /**
+     * @return Generator<string, array{string, Src\Enum\VersionRange}>
+     */
+    public static function getConfigReturnsConfigWithVersionRangeIndicatorsDataProvider(): Generator
+    {
+        $patchTypes = [
+            'build',
+            'chore',
+            'ci',
+            'docs',
+            'fix',
+            'perf',
+            'refactor',
+            'revert',
+            'style',
+            'test',
+        ];
+
+        yield 'breaking change' => ['feat!: add breaking feature', Src\Enum\VersionRange::Major];
+        yield 'breaking change with scope' => ['feat(foo)!: add breaking feature', Src\Enum\VersionRange::Major];
+        yield 'feature' => ['feat: add non-breaking feature', Src\Enum\VersionRange::Minor];
+        yield 'feature with scope' => ['feat(foo): add non-breaking feature', Src\Enum\VersionRange::Minor];
+
+        foreach ($patchTypes as $patchType) {
+            yield $patchType => [$patchType.': do something', Src\Enum\VersionRange::Patch];
+            yield $patchType.' with scope' => [$patchType.'(foo): do something', Src\Enum\VersionRange::Patch];
+        }
+    }
+
     #[Framework\Attributes\Test]
     #[Framework\Attributes\DataProvider('getConfigReturnsConfigWithVersionRangeIndicatorsDataProvider')]
     public function getConfigReturnsConfigWithVersionRangeIndicators(
@@ -118,34 +147,5 @@ final class ConventionalCommitsPresetTest extends Framework\TestCase
         $actual = $versionRangeDetector->detect(__DIR__, $indicators, '1.2.0');
 
         self::assertSame($expected, $actual);
-    }
-
-    /**
-     * @return Generator<string, array{string, Src\Enum\VersionRange}>
-     */
-    public static function getConfigReturnsConfigWithVersionRangeIndicatorsDataProvider(): Generator
-    {
-        $patchTypes = [
-            'build',
-            'chore',
-            'ci',
-            'docs',
-            'fix',
-            'perf',
-            'refactor',
-            'revert',
-            'style',
-            'test',
-        ];
-
-        yield 'breaking change' => ['feat!: add breaking feature', Src\Enum\VersionRange::Major];
-        yield 'breaking change with scope' => ['feat(foo)!: add breaking feature', Src\Enum\VersionRange::Major];
-        yield 'feature' => ['feat: add non-breaking feature', Src\Enum\VersionRange::Minor];
-        yield 'feature with scope' => ['feat(foo): add non-breaking feature', Src\Enum\VersionRange::Minor];
-
-        foreach ($patchTypes as $patchType) {
-            yield $patchType => [$patchType.': do something', Src\Enum\VersionRange::Patch];
-            yield $patchType.' with scope' => [$patchType.'(foo): do something', Src\Enum\VersionRange::Patch];
-        }
     }
 }

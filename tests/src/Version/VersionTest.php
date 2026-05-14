@@ -59,11 +59,33 @@ final class VersionTest extends Framework\TestCase
         self::assertEquals($this->subject, Src\Version\Version::fromFullVersion('1.2.3'));
     }
 
+    /**
+     * @return Generator<string, array{Src\Enum\VersionRange, Src\Version\Version}>
+     */
+    public static function increaseReturnsIncreasedStableVersionDataProvider(): Generator
+    {
+        yield 'major' => [Src\Enum\VersionRange::Major, new Src\Version\Version(2, 0, 0)];
+        yield 'minor' => [Src\Enum\VersionRange::Minor, new Src\Version\Version(1, 3, 0)];
+        yield 'next' => [Src\Enum\VersionRange::Next, new Src\Version\Version(1, 2, 4)];
+        yield 'patch' => [Src\Enum\VersionRange::Patch, new Src\Version\Version(1, 2, 4)];
+    }
+
     #[Framework\Attributes\Test]
     #[Framework\Attributes\DataProvider('increaseReturnsIncreasedStableVersionDataProvider')]
     public function increaseReturnsIncreasedStableVersion(Src\Enum\VersionRange $range, Src\Version\Version $expected): void
     {
         self::assertEquals($expected, $this->subject->increase($range));
+    }
+
+    /**
+     * @return Generator<string, array{Src\Enum\VersionRange, Src\Version\Version}>
+     */
+    public static function increaseReturnsIncreasedUnstableVersionDataProvider(): Generator
+    {
+        yield 'major' => [Src\Enum\VersionRange::Major, new Src\Version\Version(0, 2, 0)];
+        yield 'minor' => [Src\Enum\VersionRange::Minor, new Src\Version\Version(0, 1, 3)];
+        yield 'next' => [Src\Enum\VersionRange::Next, new Src\Version\Version(0, 1, 3)];
+        yield 'patch' => [Src\Enum\VersionRange::Patch, new Src\Version\Version(0, 1, 3)];
     }
 
     #[Framework\Attributes\Test]
@@ -85,27 +107,5 @@ final class VersionTest extends Framework\TestCase
     public function stringRepresentationReturnsFullVersion(): void
     {
         self::assertSame('1.2.3', (string) $this->subject);
-    }
-
-    /**
-     * @return Generator<string, array{Src\Enum\VersionRange, Src\Version\Version}>
-     */
-    public static function increaseReturnsIncreasedStableVersionDataProvider(): Generator
-    {
-        yield 'major' => [Src\Enum\VersionRange::Major, new Src\Version\Version(2, 0, 0)];
-        yield 'minor' => [Src\Enum\VersionRange::Minor, new Src\Version\Version(1, 3, 0)];
-        yield 'next' => [Src\Enum\VersionRange::Next, new Src\Version\Version(1, 2, 4)];
-        yield 'patch' => [Src\Enum\VersionRange::Patch, new Src\Version\Version(1, 2, 4)];
-    }
-
-    /**
-     * @return Generator<string, array{Src\Enum\VersionRange, Src\Version\Version}>
-     */
-    public static function increaseReturnsIncreasedUnstableVersionDataProvider(): Generator
-    {
-        yield 'major' => [Src\Enum\VersionRange::Major, new Src\Version\Version(0, 2, 0)];
-        yield 'minor' => [Src\Enum\VersionRange::Minor, new Src\Version\Version(0, 1, 3)];
-        yield 'next' => [Src\Enum\VersionRange::Next, new Src\Version\Version(0, 1, 3)];
-        yield 'patch' => [Src\Enum\VersionRange::Patch, new Src\Version\Version(0, 1, 3)];
     }
 }
