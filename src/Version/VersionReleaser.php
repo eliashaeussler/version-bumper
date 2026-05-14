@@ -23,8 +23,10 @@ declare(strict_types=1);
 
 namespace EliasHaeussler\VersionBumper\Version;
 
+use Composer\EventDispatcher;
 use EliasHaeussler\VersionBumper\Config;
 use EliasHaeussler\VersionBumper\Enum;
+use EliasHaeussler\VersionBumper\Event;
 use EliasHaeussler\VersionBumper\Exception;
 use EliasHaeussler\VersionBumper\Helper;
 use EliasHaeussler\VersionBumper\Result;
@@ -42,8 +44,11 @@ use function is_string;
  */
 final readonly class VersionReleaser
 {
+    use Event\Dispatchable;
+
     public function __construct(
         private ?Command\Caller\CallerInterface $caller = null,
+        private ?EventDispatcher\EventDispatcher $eventDispatcher = null,
     ) {}
 
     /**
@@ -79,6 +84,10 @@ final readonly class VersionReleaser
         $modifiedFiles = $this->extractModifiedFilesFromResults($results);
         $tagName = Helper\VersionHelper::replaceVersionInPattern($options->tagName(), $version);
 
+        $this->dispatchEvent(
+            new Event\VersionReleasePrepared($results, $modifiedFiles, $options, $version),
+        );
+
         // Check if tag already exists
         if (null !== $repository->getTag($tagName)) {
             if (!$options->overwriteExistingTag()) {
@@ -106,7 +115,13 @@ final readonly class VersionReleaser
             }
         }
 
-        return new Result\VersionReleaseResult($modifiedFiles, $tagName, $commitMessage, $commitId);
+        $result = new Result\VersionReleaseResult($modifiedFiles, $tagName, $commitMessage, $commitId);
+
+        $this->dispatchEvent(
+            new Event\VersionReleaseCreated($result),
+        );
+
+        return $result;
     }
 
     /**
