@@ -275,7 +275,15 @@ final class BumpVersionCommand extends Command\BaseCommand
         // Bump versions
         $versionBumpResults = $this->taskRunner->run(
             'Bumping versions in files',
-            fn () => $this->bumper->bump($config->filesToModify(), $rootPath, $versionRange, $dryRun),
+            function (TaskRunner\RunnerContext $context) use ($config, $rootPath, $versionRange, $dryRun) {
+                $results = $this->bumper->bump($config->filesToModify(), $rootPath, $versionRange, $dryRun);
+
+                if ([] === $results) {
+                    $context->statusMessage = '<comment>Skipped</comment>';
+                }
+
+                return $results;
+            },
         );
 
         // Merged results from version bump with global results

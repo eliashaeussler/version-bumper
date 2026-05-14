@@ -537,6 +537,23 @@ final class BumpVersionCommandTest extends Framework\TestCase
     }
 
     #[Framework\Attributes\Test]
+    public function executeSkipsVersionBumpIfNoFilesToModifyAreConfigured(): void
+    {
+        $configFile = dirname(__DIR__).'/Fixtures/ConfigFiles/valid-config-without-files.json';
+
+        $this->commandTester->execute([
+            'range' => '2.0.0',
+            '--config' => $configFile,
+            '--dry-run' => true,
+        ]);
+
+        $output = $this->commandTester->getDisplay();
+
+        self::assertSame(Console\Command\Command::SUCCESS, $this->commandTester->getStatusCode());
+        self::assertStringContainsString('Bumping versions in files... Skipped', $output);
+    }
+
+    #[Framework\Attributes\Test]
     public function executeCollectsAndDisplaysDeprecatedConfigOptions(): void
     {
         $configFile = dirname(__DIR__).'/Fixtures/ConfigFiles/valid-config-with-deprecated-config.json';
