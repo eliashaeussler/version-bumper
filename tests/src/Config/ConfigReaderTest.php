@@ -218,31 +218,6 @@ final class ConfigReaderTest extends Framework\TestCase
         self::assertEquals($expected, $this->subject->readFromFile($file));
     }
 
-    #[Framework\Attributes\Test]
-    #[Framework\Attributes\DataProvider('readFromFileAppliesConfiguredPresetsDataProvider')]
-    public function readFromFileAppliesConfiguredPresets(string $preset, Src\Config\VersionBumperConfig $expected): void
-    {
-        $rootPath = dirname(__DIR__).'/Fixtures/ConfigFiles';
-        $file = $rootPath.'/valid-config-with-'.$preset.'-preset.json';
-
-        self::assertEquals($expected, $this->subject->readFromFile($file));
-    }
-
-    #[Framework\Attributes\Test]
-    public function detectFileReturnsNullIfNoConfigFilesAreAvailableInGivenRootPath(): void
-    {
-        self::assertNull($this->subject->detectFile(__DIR__));
-    }
-
-    #[Framework\Attributes\Test]
-    public function detectFileReturnsAutoDetectedFileWithinGivenRootPath(): void
-    {
-        $rootPath = dirname(__DIR__).'/Fixtures/ConfigFiles';
-        $expected = Filesystem\Path::join($rootPath, 'version-bumper.php');
-
-        self::assertSame($expected, $this->subject->detectFile($rootPath));
-    }
-
     /**
      * @return Generator<string, array{string, Src\Config\VersionBumperConfig}>
      */
@@ -423,5 +398,30 @@ final class ConfigReaderTest extends Framework\TestCase
                 new Src\Config\ReleaseOptions('[RELEASE] Release of EXT:foo {%version%}'),
             ),
         ];
+    }
+
+    #[Framework\Attributes\Test]
+    #[Framework\Attributes\DataProvider('readFromFileAppliesConfiguredPresetsDataProvider')]
+    public function readFromFileAppliesConfiguredPresets(string $preset, Src\Config\VersionBumperConfig $expected): void
+    {
+        $rootPath = dirname(__DIR__).'/Fixtures/ConfigFiles';
+        $file = $rootPath.'/valid-config-with-'.$preset.'-preset.json';
+
+        self::assertEquals($expected, $this->subject->readFromFile($file));
+    }
+
+    #[Framework\Attributes\Test]
+    public function detectFileReturnsNullIfNoConfigFilesAreAvailableInGivenRootPath(): void
+    {
+        self::assertNull($this->subject->detectFile(__DIR__));
+    }
+
+    #[Framework\Attributes\Test]
+    public function detectFileReturnsAutoDetectedFileWithinGivenRootPath(): void
+    {
+        $rootPath = dirname(__DIR__).'/Fixtures/ConfigFiles';
+        $expected = Filesystem\Path::join($rootPath, 'version-bumper.php');
+
+        self::assertSame($expected, $this->subject->detectFile($rootPath));
     }
 }

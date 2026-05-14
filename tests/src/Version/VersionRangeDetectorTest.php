@@ -127,79 +127,6 @@ final class VersionRangeDetectorTest extends Framework\TestCase
     }
 
     /**
-     * @param list<Src\Config\VersionRangeIndicator> $indicators
-     */
-    #[Framework\Attributes\Test]
-    #[Framework\Attributes\DataProvider('detectReturnsAutoDetectedVersionRangeForGivenVersionTagDataProvider')]
-    public function detectReturnsAutoDetectedVersionRangeForGivenVersionTag(
-        array $indicators,
-        ?Src\Enum\VersionRange $expected,
-    ): void {
-        $commit = (string) file_get_contents(dirname(__DIR__).'/Fixtures/Git/log-commit.txt');
-        $tag = (string) file_get_contents(dirname(__DIR__).'/Fixtures/Git/show-tag.txt');
-        $diff = (string) file_get_contents(dirname(__DIR__).'/Fixtures/Git/diff-tag-added.txt');
-
-        $this->caller
-            ->addResult('tag', '1.2.0')
-            ->addResult('tag', '1.2.0')
-            ->addResult("rev-list '-n1' 'refs/tags/1.2.0'", '08708bc0b5c07a8233b6510c4677ad3ad112d5d4')
-            ->addResult("log '-s' '--pretty=raw' '--no-color' '--max-count=-1' '--skip=0' 'refs/tags/1.2.0..HEAD'", $commit)
-            ->addResult("show '-s' '--pretty=raw' '--no-color' '1.2.0'", $tag)
-            ->addResult("diff '--full-index' '--no-color' '--no-ext-diff' '-M' '--dst-prefix=DST/' '--src-prefix=SRC/' '08708bc0b5c07a8233b6510c4677ad3ad112d5d4^..08708bc0b5c07a8233b6510c4677ad3ad112d5d4'", $diff)
-        ;
-
-        $actual = $this->subject->detect(__DIR__, $indicators, '1.2.0');
-
-        self::assertSame($expected, $actual);
-    }
-
-    #[Framework\Attributes\Test]
-    public function detectReturnsAutoDetectedVersionRangeForLatestVersionTag(): void
-    {
-        $indicators = [
-            new Src\Config\VersionRangeIndicator(
-                Src\Enum\VersionRange::Patch,
-                [
-                    new Src\Config\VersionRangePattern(
-                        Src\Enum\VersionRangeIndicatorType::FileAdded,
-                        '/^README\.md$/',
-                    ),
-                ],
-            ),
-        ];
-
-        $tags = <<<TAGS
-1.0.0
-1.0.1
-1.1.0
-1.2.0
-TAGS;
-
-        $commit = (string) file_get_contents(dirname(__DIR__).'/Fixtures/Git/log-commit.txt');
-        $tag = (string) file_get_contents(dirname(__DIR__).'/Fixtures/Git/show-tag.txt');
-        $diff = (string) file_get_contents(dirname(__DIR__).'/Fixtures/Git/diff-tag-added.txt');
-
-        $this->caller
-            ->addResult('tag', $tags)
-            ->addResult('tag', $tags)
-            ->addResult("rev-list '-n1' 'refs/tags/1.0.0'", '08708bc0b5c07a8233b6510c4677ad3ad112d5d4')
-            ->addResult('tag', $tags)
-            ->addResult("rev-list '-n1' 'refs/tags/1.0.1'", '08708bc0b5c07a8233b6510c4677ad3ad112d5d4')
-            ->addResult('tag', $tags)
-            ->addResult("rev-list '-n1' 'refs/tags/1.1.0'", '08708bc0b5c07a8233b6510c4677ad3ad112d5d4')
-            ->addResult('tag', $tags)
-            ->addResult("rev-list '-n1' 'refs/tags/1.2.0'", '08708bc0b5c07a8233b6510c4677ad3ad112d5d4')
-            ->addResult("log '-s' '--pretty=raw' '--no-color' '--max-count=-1' '--skip=0' 'refs/tags/1.2.0..HEAD'", $commit)
-            ->addResult("show '-s' '--pretty=raw' '--no-color' '1.2.0'", $tag)
-            ->addResult("diff '--full-index' '--no-color' '--no-ext-diff' '-M' '--dst-prefix=DST/' '--src-prefix=SRC/' '08708bc0b5c07a8233b6510c4677ad3ad112d5d4^..08708bc0b5c07a8233b6510c4677ad3ad112d5d4'", $diff)
-        ;
-
-        $actual = $this->subject->detect(__DIR__, $indicators);
-
-        self::assertSame(Src\Enum\VersionRange::Patch, $actual);
-    }
-
-    /**
      * @return Generator<string, array{list<Src\Config\VersionRangeIndicator>, Src\Enum\VersionRange|null}>
      */
     public static function detectReturnsAutoDetectedVersionRangeForGivenVersionTagDataProvider(): Generator
@@ -354,5 +281,78 @@ TAGS;
             ],
             Src\Enum\VersionRange::Minor,
         ];
+    }
+
+    /**
+     * @param list<Src\Config\VersionRangeIndicator> $indicators
+     */
+    #[Framework\Attributes\Test]
+    #[Framework\Attributes\DataProvider('detectReturnsAutoDetectedVersionRangeForGivenVersionTagDataProvider')]
+    public function detectReturnsAutoDetectedVersionRangeForGivenVersionTag(
+        array $indicators,
+        ?Src\Enum\VersionRange $expected,
+    ): void {
+        $commit = (string) file_get_contents(dirname(__DIR__).'/Fixtures/Git/log-commit.txt');
+        $tag = (string) file_get_contents(dirname(__DIR__).'/Fixtures/Git/show-tag.txt');
+        $diff = (string) file_get_contents(dirname(__DIR__).'/Fixtures/Git/diff-tag-added.txt');
+
+        $this->caller
+            ->addResult('tag', '1.2.0')
+            ->addResult('tag', '1.2.0')
+            ->addResult("rev-list '-n1' 'refs/tags/1.2.0'", '08708bc0b5c07a8233b6510c4677ad3ad112d5d4')
+            ->addResult("log '-s' '--pretty=raw' '--no-color' '--max-count=-1' '--skip=0' 'refs/tags/1.2.0..HEAD'", $commit)
+            ->addResult("show '-s' '--pretty=raw' '--no-color' '1.2.0'", $tag)
+            ->addResult("diff '--full-index' '--no-color' '--no-ext-diff' '-M' '--dst-prefix=DST/' '--src-prefix=SRC/' '08708bc0b5c07a8233b6510c4677ad3ad112d5d4^..08708bc0b5c07a8233b6510c4677ad3ad112d5d4'", $diff)
+        ;
+
+        $actual = $this->subject->detect(__DIR__, $indicators, '1.2.0');
+
+        self::assertSame($expected, $actual);
+    }
+
+    #[Framework\Attributes\Test]
+    public function detectReturnsAutoDetectedVersionRangeForLatestVersionTag(): void
+    {
+        $indicators = [
+            new Src\Config\VersionRangeIndicator(
+                Src\Enum\VersionRange::Patch,
+                [
+                    new Src\Config\VersionRangePattern(
+                        Src\Enum\VersionRangeIndicatorType::FileAdded,
+                        '/^README\.md$/',
+                    ),
+                ],
+            ),
+        ];
+
+        $tags = <<<TAGS
+1.0.0
+1.0.1
+1.1.0
+1.2.0
+TAGS;
+
+        $commit = (string) file_get_contents(dirname(__DIR__).'/Fixtures/Git/log-commit.txt');
+        $tag = (string) file_get_contents(dirname(__DIR__).'/Fixtures/Git/show-tag.txt');
+        $diff = (string) file_get_contents(dirname(__DIR__).'/Fixtures/Git/diff-tag-added.txt');
+
+        $this->caller
+            ->addResult('tag', $tags)
+            ->addResult('tag', $tags)
+            ->addResult("rev-list '-n1' 'refs/tags/1.0.0'", '08708bc0b5c07a8233b6510c4677ad3ad112d5d4')
+            ->addResult('tag', $tags)
+            ->addResult("rev-list '-n1' 'refs/tags/1.0.1'", '08708bc0b5c07a8233b6510c4677ad3ad112d5d4')
+            ->addResult('tag', $tags)
+            ->addResult("rev-list '-n1' 'refs/tags/1.1.0'", '08708bc0b5c07a8233b6510c4677ad3ad112d5d4')
+            ->addResult('tag', $tags)
+            ->addResult("rev-list '-n1' 'refs/tags/1.2.0'", '08708bc0b5c07a8233b6510c4677ad3ad112d5d4')
+            ->addResult("log '-s' '--pretty=raw' '--no-color' '--max-count=-1' '--skip=0' 'refs/tags/1.2.0..HEAD'", $commit)
+            ->addResult("show '-s' '--pretty=raw' '--no-color' '1.2.0'", $tag)
+            ->addResult("diff '--full-index' '--no-color' '--no-ext-diff' '-M' '--dst-prefix=DST/' '--src-prefix=SRC/' '08708bc0b5c07a8233b6510c4677ad3ad112d5d4^..08708bc0b5c07a8233b6510c4677ad3ad112d5d4'", $diff)
+        ;
+
+        $actual = $this->subject->detect(__DIR__, $indicators);
+
+        self::assertSame(Src\Enum\VersionRange::Patch, $actual);
     }
 }

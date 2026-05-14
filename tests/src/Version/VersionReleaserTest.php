@@ -80,6 +80,34 @@ final class VersionReleaserTest extends Framework\TestCase
     }
 
     /**
+     * @return Generator<string, array{list<Src\Result\VersionBumpResult>}>
+     */
+    public static function releaseThrowsExceptionIfTargetVersionIsMissingDataProvider(): Generator
+    {
+        yield 'no results' => [[]];
+        yield 'no write operations' => [
+            [
+                new Src\Result\VersionBumpResult(
+                    new Src\Config\FileToModify('foo'),
+                    [],
+                ),
+            ],
+        ];
+        yield 'missing target version' => [
+            [
+                new Src\Result\VersionBumpResult(
+                    new Src\Config\FileToModify('foo'),
+                    [
+                        Src\Result\WriteOperation::unmatched(
+                            new Src\Config\FilePattern('foo: {%version%}'),
+                        ),
+                    ],
+                ),
+            ],
+        ];
+    }
+
+    /**
      * @param list<Src\Result\VersionBumpResult> $results
      */
     #[Framework\Attributes\Test]
@@ -415,34 +443,6 @@ TAGS;
                 true,
             ),
         );
-    }
-
-    /**
-     * @return Generator<string, array{list<Src\Result\VersionBumpResult>}>
-     */
-    public static function releaseThrowsExceptionIfTargetVersionIsMissingDataProvider(): Generator
-    {
-        yield 'no results' => [[]];
-        yield 'no write operations' => [
-            [
-                new Src\Result\VersionBumpResult(
-                    new Src\Config\FileToModify('foo'),
-                    [],
-                ),
-            ],
-        ];
-        yield 'missing target version' => [
-            [
-                new Src\Result\VersionBumpResult(
-                    new Src\Config\FileToModify('foo'),
-                    [
-                        Src\Result\WriteOperation::unmatched(
-                            new Src\Config\FilePattern('foo: {%version%}'),
-                        ),
-                    ],
-                ),
-            ],
-        ];
     }
 
     protected function tearDown(): void
