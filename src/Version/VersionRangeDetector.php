@@ -33,12 +33,9 @@ use GitElephant\Repository;
 
 use function array_filter;
 use function array_map;
-use function array_pop;
 use function array_values;
 use function iterator_to_array;
 use function sprintf;
-use function usort;
-use function version_compare;
 
 /**
  * VersionRangeDetector.
@@ -60,6 +57,7 @@ final readonly class VersionRangeDetector
      * @throws Exception\CannotFetchLatestGitTag
      * @throws Exception\GitTagDoesNotExist
      * @throws Exception\NoGitTagsFound
+     * @throws Exception\VersionIsNotSupported
      */
     public function detect(string $rootPath, array $indicators, ?string $since = null): ?Enum\VersionRange
     {
@@ -73,9 +71,9 @@ final readonly class VersionRangeDetector
 
         // Fetch tag used for comparison
         if (null !== $since) {
-            $tag = $this->fetchTag($since, $repository) ?? throw new Exception\GitTagDoesNotExist($since);
+            $tag = Helper\GitHelper::fetchTag($since, $repository) ?? throw new Exception\GitTagDoesNotExist($since);
         } else {
-            $tag = $this->fetchLatestVersionTag($repository) ?? throw new Exception\NoGitTagsFound();
+            $tag = Helper\GitHelper::fetchLatestVersionTag($repository) ?? throw new Exception\NoGitTagsFound();
         }
 
         // Fetch relevant Git information
@@ -124,55 +122,6 @@ final readonly class VersionRangeDetector
         }
 
         return null;
-    }
-
-    /**
-     * @throws Exception\CannotFetchGitTag
-     */
-    private function fetchTag(string $tagName, Repository $repository): ?Objects\Tag
-    {
-        try {
-            return $repository->getTag($tagName);
-        } catch (\Exception) {
-            throw new Exception\CannotFetchGitTag($tagName);
-        }
-    }
-
-    /**
-     * @throws Exception\CannotFetchLatestGitTag
-     */
-    private function fetchLatestVersionTag(Repository $repository): ?Objects\Tag
-    {
-        try {
-            /** @var list<Objects\Tag> $tags */
-            $tags = $repository->getTags();
-        } catch (\Exception) {
-            throw new Exception\CannotFetchLatestGitTag();
-        }
-
-        // Drop all non-version tags
-        $tags = array_filter(
-            $tags,
-            static fn (Objects\Tag $tag) => Helper\VersionHelper::isValidVersion($tag->getName()),
-        );
-
-        // Early return if no version tags are left
-        if ([] === $tags) {
-            return null;
-        }
-
-        // Sort version tags by descending version number
-        usort(
-            $tags,
-            static function (Objects\Tag $a, Objects\Tag $b) {
-                $a = Version::fromFullVersion($a->getName());
-                $b = Version::fromFullVersion($b->getName());
-
-                return version_compare($a->full(), $b->full());
-            },
-        );
-
-        return array_pop($tags);
     }
 
     /**

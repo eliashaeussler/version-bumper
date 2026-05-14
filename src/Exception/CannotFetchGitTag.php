@@ -23,6 +23,8 @@ declare(strict_types=1);
 
 namespace EliasHaeussler\VersionBumper\Exception;
 
+use Throwable;
+
 use function sprintf;
 
 /**
@@ -33,11 +35,12 @@ use function sprintf;
  */
 final class CannotFetchGitTag extends Exception
 {
-    public function __construct(string $tag)
+    public function __construct(string $tag, ?Throwable $previous = null)
     {
         parent::__construct(
             sprintf('Unable to fetch Git tag "%s" from repository.', $tag),
             1731358122,
+            $previous,
         );
     }
 }

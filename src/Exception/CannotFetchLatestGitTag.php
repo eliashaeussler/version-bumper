@@ -23,6 +23,8 @@ declare(strict_types=1);
 
 namespace EliasHaeussler\VersionBumper\Exception;
 
+use Throwable;
+
 /**
  * CannotFetchLatestGitTag.
  *
@@ -31,11 +33,12 @@ namespace EliasHaeussler\VersionBumper\Exception;
  */
 final class CannotFetchLatestGitTag extends Exception
 {
-    public function __construct()
+    public function __construct(?Throwable $previous = null)
     {
         parent::__construct(
             'Unable to fetch latest Git tag from repository.',
             1731357818,
+            $previous,
         );
     }
 }
