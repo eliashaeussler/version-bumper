@@ -197,14 +197,14 @@ final class BumpVersionCommandTest extends Framework\TestCase
         $tag = (string) file_get_contents(dirname(__DIR__).'/Fixtures/Git/show-tag.txt');
         $diff = (string) file_get_contents(dirname(__DIR__).'/Fixtures/Git/diff-tag-added.txt');
 
-        $this->caller->results = [
-            ['1.2.0', 'tag'],
-            ['1.2.0', 'tag'],
-            ['08708bc0b5c07a8233b6510c4677ad3ad112d5d4', "rev-list '-n1' 'refs/tags/1.2.0'"],
-            [$commit, "log '-s' '--pretty=raw' '--no-color' '--max-count=-1' '--skip=0' 'refs/tags/1.2.0..HEAD'"],
-            [$tag, "show '-s' '--pretty=raw' '--no-color' '1.2.0'"],
-            [$diff, "diff '--full-index' '--no-color' '--no-ext-diff' '-M' '--dst-prefix=DST/' '--src-prefix=SRC/' '08708bc0b5c07a8233b6510c4677ad3ad112d5d4^..08708bc0b5c07a8233b6510c4677ad3ad112d5d4'"],
-        ];
+        $this->caller
+            ->addResult('tag', '1.2.0')
+            ->addResult('tag', '1.2.0')
+            ->addResult("rev-list '-n1' 'refs/tags/1.2.0'", '08708bc0b5c07a8233b6510c4677ad3ad112d5d4')
+            ->addResult("log '-s' '--pretty=raw' '--no-color' '--max-count=-1' '--skip=0' 'refs/tags/1.2.0..HEAD'", $commit)
+            ->addResult("show '-s' '--pretty=raw' '--no-color' '1.2.0'", $tag)
+            ->addResult("diff '--full-index' '--no-color' '--no-ext-diff' '-M' '--dst-prefix=DST/' '--src-prefix=SRC/' '08708bc0b5c07a8233b6510c4677ad3ad112d5d4^..08708bc0b5c07a8233b6510c4677ad3ad112d5d4'", $diff)
+        ;
 
         $this->commandTester->execute([
             '--config' => $configFile,
@@ -220,9 +220,7 @@ final class BumpVersionCommandTest extends Framework\TestCase
     {
         $configFile = dirname(__DIR__).'/Fixtures/ConfigFiles/valid-config-with-indicators.json';
 
-        $this->caller->results = [
-            ['', 'tag'],
-        ];
+        $this->caller->addResult('tag', '');
 
         $this->commandTester->execute([
             '--config' => $configFile,
@@ -244,14 +242,14 @@ final class BumpVersionCommandTest extends Framework\TestCase
         $tag = (string) file_get_contents(dirname(__DIR__).'/Fixtures/Git/show-tag.txt');
         $diff = (string) file_get_contents(dirname(__DIR__).'/Fixtures/Git/diff-tag-deleted.txt');
 
-        $this->caller->results = [
-            ['1.2.0', 'tag'],
-            ['1.2.0', 'tag'],
-            ['08708bc0b5c07a8233b6510c4677ad3ad112d5d4', "rev-list '-n1' 'refs/tags/1.2.0'"],
-            [$commit, "log '-s' '--pretty=raw' '--no-color' '--max-count=-1' '--skip=0' 'refs/tags/1.2.0..HEAD'"],
-            [$tag, "show '-s' '--pretty=raw' '--no-color' '1.2.0'"],
-            [$diff, "diff '--full-index' '--no-color' '--no-ext-diff' '-M' '--dst-prefix=DST/' '--src-prefix=SRC/' '08708bc0b5c07a8233b6510c4677ad3ad112d5d4^..08708bc0b5c07a8233b6510c4677ad3ad112d5d4'"],
-        ];
+        $this->caller
+            ->addResult('tag', '1.2.0')
+            ->addResult('tag', '1.2.0')
+            ->addResult("rev-list '-n1' 'refs/tags/1.2.0'", '08708bc0b5c07a8233b6510c4677ad3ad112d5d4')
+            ->addResult("log '-s' '--pretty=raw' '--no-color' '--max-count=-1' '--skip=0' 'refs/tags/1.2.0..HEAD'", $commit)
+            ->addResult("show '-s' '--pretty=raw' '--no-color' '1.2.0'", $tag)
+            ->addResult("diff '--full-index' '--no-color' '--no-ext-diff' '-M' '--dst-prefix=DST/' '--src-prefix=SRC/' '08708bc0b5c07a8233b6510c4677ad3ad112d5d4^..08708bc0b5c07a8233b6510c4677ad3ad112d5d4'", $diff)
+        ;
 
         $this->commandTester->execute([
             '--config' => $configFile,
@@ -604,11 +602,11 @@ final class BumpVersionCommandTest extends Framework\TestCase
     {
         $configFile = dirname(__DIR__).'/Fixtures/ConfigFiles/valid-config-with-root-path.json';
 
-        $this->caller->results = [
-            ['1.0.0', 'tag'],
-            ['1.0.0', 'tag'],
-            ['08708bc0b5c07a8233b6510c4677ad3ad112d5d4', "rev-list '-n1' 'refs/tags/1.0.0'"],
-        ];
+        $this->caller
+            ->addResult('tag', '1.0.0')
+            ->addResult('tag', '1.0.0')
+            ->addResult("rev-list '-n1' 'refs/tags/1.0.0'", '08708bc0b5c07a8233b6510c4677ad3ad112d5d4')
+        ;
 
         $this->commandTester->execute([
             'range' => '1.0.0',
@@ -665,7 +663,7 @@ final class BumpVersionCommandTest extends Framework\TestCase
 
     protected function tearDown(): void
     {
-        $this->caller->results = [];
+        $this->caller->resetOutput();
     }
 
     private function createCommandTester(?Composer $composer = null): Console\Tester\CommandTester

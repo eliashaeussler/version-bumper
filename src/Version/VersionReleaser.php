@@ -24,6 +24,7 @@ declare(strict_types=1);
 namespace EliasHaeussler\VersionBumper\Version;
 
 use EliasHaeussler\VersionBumper\Config;
+use EliasHaeussler\VersionBumper\Enum;
 use EliasHaeussler\VersionBumper\Exception;
 use EliasHaeussler\VersionBumper\Helper;
 use EliasHaeussler\VersionBumper\Result;
@@ -31,6 +32,7 @@ use GitElephant\Command;
 use GitElephant\Repository;
 
 use function in_array;
+use function is_string;
 
 /**
  * VersionReleaser.
@@ -48,38 +50,34 @@ final readonly class VersionReleaser
      * @param list<Result\VersionBumpResult> $results
      *
      * @throws Exception\AmbiguousVersionsDetected
+     * @throws Exception\CannotFetchLatestGitTag
      * @throws Exception\CouldNotCreateGitTag
-     * @throws Exception\NoModifiedFilesFound
      * @throws Exception\TagAlreadyExists
      * @throws Exception\TargetVersionIsMissing
+     * @throws Exception\VersionIsNotSupported
      */
     public function release(
         array $results,
         string $rootPath,
         Config\ReleaseOptions $options = new Config\ReleaseOptions(),
+        Enum\VersionRange|string|null $versionRange = null,
         bool $dryRun = false,
     ): Result\VersionReleaseResult {
-        $version = $this->extractVersionFromResults($results);
+        $repository = new Repository($rootPath);
+
+        // Inject custom repository caller
+        if (null !== $this->caller) {
+            $repository->setCaller($this->caller);
+        }
+
+        $version = $this->extractVersionFromResults($results) ?? $this->detectVersionFromVersionRange($versionRange, $repository);
 
         if (null === $version) {
             throw new Exception\TargetVersionIsMissing();
         }
 
         $modifiedFiles = $this->extractModifiedFilesFromResults($results);
-
-        if ([] === $modifiedFiles) {
-            throw new Exception\NoModifiedFilesFound();
-        }
-
-        $repository = new Repository($rootPath);
-        $commitMessage = Helper\VersionHelper::replaceVersionInPattern($options->commitMessage(), $version);
         $tagName = Helper\VersionHelper::replaceVersionInPattern($options->tagName(), $version);
-        $commitId = null;
-
-        // Inject custom repository caller
-        if (null !== $this->caller) {
-            $repository->setCaller($this->caller);
-        }
 
         // Check if tag already exists
         if (null !== $repository->getTag($tagName)) {
@@ -92,14 +90,9 @@ final readonly class VersionReleaser
             }
         }
 
+        [$commitMessage, $commitId] = $this->commitModifiedFiles($modifiedFiles, $repository, $options, $version, $dryRun);
+
         if (!$dryRun) {
-            // Add and commit modified files
-            foreach ($modifiedFiles as $file) {
-                $repository->stage($file->path());
-            }
-
-            $repository->commit($commitMessage);
-
             $tagCommand = Command\TagCommand::getInstance($repository)->create($tagName, null, $tagName);
 
             if ($options->signTag()) {
@@ -108,11 +101,45 @@ final readonly class VersionReleaser
 
             $repository->getCaller()->execute($tagCommand);
 
-            $tag = $repository->getTag($tagName) ?? throw new Exception\CouldNotCreateGitTag($tagName);
-            $commitId = $tag->getSha();
+            if (null === $repository->getTag($tagName)) {
+                throw new Exception\CouldNotCreateGitTag($tagName);
+            }
         }
 
-        return new Result\VersionReleaseResult($modifiedFiles, $commitMessage, $tagName, $commitId);
+        return new Result\VersionReleaseResult($modifiedFiles, $tagName, $commitMessage, $commitId);
+    }
+
+    /**
+     * @param list<Config\FileToModify> $modifiedFiles
+     *
+     * @return array{string|null, string|null}
+     */
+    private function commitModifiedFiles(
+        array $modifiedFiles,
+        Repository $repository,
+        Config\ReleaseOptions $options,
+        Version $version,
+        bool $dryRun,
+    ): array {
+        if ([] === $modifiedFiles) {
+            return [null, null];
+        }
+
+        $commitMessage = Helper\VersionHelper::replaceVersionInPattern($options->commitMessage(), $version);
+
+        if ($dryRun) {
+            return [$commitMessage, null];
+        }
+
+        // Add and commit modified files
+        foreach ($modifiedFiles as $file) {
+            $repository->stage($file->path());
+        }
+
+        $repository->commit($commitMessage);
+        $commitId = $repository->getCommit()->getSha();
+
+        return [$commitMessage, $commitId];
     }
 
     /**
@@ -143,6 +170,29 @@ final readonly class VersionReleaser
         }
 
         return $version;
+    }
+
+    /**
+     * @throws Exception\CannotFetchLatestGitTag
+     * @throws Exception\VersionIsNotSupported
+     */
+    private function detectVersionFromVersionRange(Enum\VersionRange|string|null $versionRange, Repository $repository): ?Version
+    {
+        if (null === $versionRange) {
+            return null;
+        }
+
+        if (is_string($versionRange)) {
+            return Version::fromFullVersion($versionRange);
+        }
+
+        $tag = Helper\GitHelper::fetchLatestVersionTag($repository);
+
+        if (null === $tag) {
+            return null;
+        }
+
+        return Version::fromFullVersion($tag->getName())->increase($versionRange);
     }
 
     /**

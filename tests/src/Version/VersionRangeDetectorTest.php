@@ -60,9 +60,7 @@ final class VersionRangeDetectorTest extends Framework\TestCase
     #[Framework\Attributes\Test]
     public function detectThrowsExceptionIfGivenVersionTagCannotBeRead(): void
     {
-        $this->caller->results = [
-            [new Exception('something went wrong'), 'tag'],
-        ];
+        $this->caller->addResult('tag', new Exception('something went wrong'));
 
         $this->expectExceptionObject(
             new Src\Exception\CannotFetchGitTag('1.2.0'),
@@ -74,9 +72,7 @@ final class VersionRangeDetectorTest extends Framework\TestCase
     #[Framework\Attributes\Test]
     public function detectThrowsExceptionIfLatestVersionTagCannotBeRead(): void
     {
-        $this->caller->results = [
-            [new Exception('something went wrong'), 'tag'],
-        ];
+        $this->caller->addResult('tag', new Exception('something went wrong'));
 
         $this->expectExceptionObject(
             new Src\Exception\CannotFetchLatestGitTag(),
@@ -88,9 +84,7 @@ final class VersionRangeDetectorTest extends Framework\TestCase
     #[Framework\Attributes\Test]
     public function detectThrowsExceptionIfNoTagsAreAvailable(): void
     {
-        $this->caller->results = [
-            ['', 'tag'],
-        ];
+        $this->caller->addResult('tag', '');
 
         $this->expectExceptionObject(
             new Src\Exception\NoGitTagsFound(),
@@ -102,11 +96,11 @@ final class VersionRangeDetectorTest extends Framework\TestCase
     #[Framework\Attributes\Test]
     public function detectThrowsExceptionIfNoVersionTagsAreAvailable(): void
     {
-        $this->caller->results = [
-            ['foo', 'tag'],
-            ['foo', 'tag'],
-            ['08708bc0b5c07a8233b6510c4677ad3ad112d5d4', "rev-list '-n1' 'refs/tags/foo'"],
-        ];
+        $this->caller
+            ->addResult('tag', 'foo')
+            ->addResult('tag', 'foo')
+            ->addResult("rev-list '-n1' 'refs/tags/foo'", '08708bc0b5c07a8233b6510c4677ad3ad112d5d4')
+        ;
 
         $this->expectExceptionObject(
             new Src\Exception\NoGitTagsFound(),
@@ -118,12 +112,12 @@ final class VersionRangeDetectorTest extends Framework\TestCase
     #[Framework\Attributes\Test]
     public function detectThrowsExceptionIfCommitMessagesCannotBeRead(): void
     {
-        $this->caller->results = [
-            ['1.2.0', 'tag'],
-            ['1.2.0', 'tag'],
-            ['08708bc0b5c07a8233b6510c4677ad3ad112d5d4', "rev-list '-n1' 'refs/tags/1.2.0'"],
-            [new Exception('something went wrong'), "log '-s' '--pretty=raw' '--no-color' '--max-count=-1' '--skip=0' 'refs/tags/1.2.0..HEAD'"],
-        ];
+        $this->caller
+            ->addResult('tag', '1.2.0')
+            ->addResult('tag', '1.2.0')
+            ->addResult("rev-list '-n1' 'refs/tags/1.2.0'", '08708bc0b5c07a8233b6510c4677ad3ad112d5d4')
+            ->addResult("log '-s' '--pretty=raw' '--no-color' '--max-count=-1' '--skip=0' 'refs/tags/1.2.0..HEAD'", new Exception('something went wrong'))
+        ;
 
         $this->expectExceptionObject(
             new Src\Exception\CannotFetchGitCommits('1.2.0..HEAD'),
@@ -145,14 +139,14 @@ final class VersionRangeDetectorTest extends Framework\TestCase
         $tag = (string) file_get_contents(dirname(__DIR__).'/Fixtures/Git/show-tag.txt');
         $diff = (string) file_get_contents(dirname(__DIR__).'/Fixtures/Git/diff-tag-added.txt');
 
-        $this->caller->results = [
-            ['1.2.0', 'tag'],
-            ['1.2.0', 'tag'],
-            ['08708bc0b5c07a8233b6510c4677ad3ad112d5d4', "rev-list '-n1' 'refs/tags/1.2.0'"],
-            [$commit, "log '-s' '--pretty=raw' '--no-color' '--max-count=-1' '--skip=0' 'refs/tags/1.2.0..HEAD'"],
-            [$tag, "show '-s' '--pretty=raw' '--no-color' '1.2.0'"],
-            [$diff, "diff '--full-index' '--no-color' '--no-ext-diff' '-M' '--dst-prefix=DST/' '--src-prefix=SRC/' '08708bc0b5c07a8233b6510c4677ad3ad112d5d4^..08708bc0b5c07a8233b6510c4677ad3ad112d5d4'"],
-        ];
+        $this->caller
+            ->addResult('tag', '1.2.0')
+            ->addResult('tag', '1.2.0')
+            ->addResult("rev-list '-n1' 'refs/tags/1.2.0'", '08708bc0b5c07a8233b6510c4677ad3ad112d5d4')
+            ->addResult("log '-s' '--pretty=raw' '--no-color' '--max-count=-1' '--skip=0' 'refs/tags/1.2.0..HEAD'", $commit)
+            ->addResult("show '-s' '--pretty=raw' '--no-color' '1.2.0'", $tag)
+            ->addResult("diff '--full-index' '--no-color' '--no-ext-diff' '-M' '--dst-prefix=DST/' '--src-prefix=SRC/' '08708bc0b5c07a8233b6510c4677ad3ad112d5d4^..08708bc0b5c07a8233b6510c4677ad3ad112d5d4'", $diff)
+        ;
 
         $actual = $this->subject->detect(__DIR__, $indicators, '1.2.0');
 
@@ -185,20 +179,20 @@ TAGS;
         $tag = (string) file_get_contents(dirname(__DIR__).'/Fixtures/Git/show-tag.txt');
         $diff = (string) file_get_contents(dirname(__DIR__).'/Fixtures/Git/diff-tag-added.txt');
 
-        $this->caller->results = [
-            [$tags, 'tag'],
-            [$tags, 'tag'],
-            ['08708bc0b5c07a8233b6510c4677ad3ad112d5d4', "rev-list '-n1' 'refs/tags/1.0.0'"],
-            [$tags, 'tag'],
-            ['08708bc0b5c07a8233b6510c4677ad3ad112d5d4', "rev-list '-n1' 'refs/tags/1.0.1'"],
-            [$tags, 'tag'],
-            ['08708bc0b5c07a8233b6510c4677ad3ad112d5d4', "rev-list '-n1' 'refs/tags/1.1.0'"],
-            [$tags, 'tag'],
-            ['08708bc0b5c07a8233b6510c4677ad3ad112d5d4', "rev-list '-n1' 'refs/tags/1.2.0'"],
-            [$commit, "log '-s' '--pretty=raw' '--no-color' '--max-count=-1' '--skip=0' 'refs/tags/1.2.0..HEAD'"],
-            [$tag, "show '-s' '--pretty=raw' '--no-color' '1.2.0'"],
-            [$diff, "diff '--full-index' '--no-color' '--no-ext-diff' '-M' '--dst-prefix=DST/' '--src-prefix=SRC/' '08708bc0b5c07a8233b6510c4677ad3ad112d5d4^..08708bc0b5c07a8233b6510c4677ad3ad112d5d4'"],
-        ];
+        $this->caller
+            ->addResult('tag', $tags)
+            ->addResult('tag', $tags)
+            ->addResult("rev-list '-n1' 'refs/tags/1.0.0'", '08708bc0b5c07a8233b6510c4677ad3ad112d5d4')
+            ->addResult('tag', $tags)
+            ->addResult("rev-list '-n1' 'refs/tags/1.0.1'", '08708bc0b5c07a8233b6510c4677ad3ad112d5d4')
+            ->addResult('tag', $tags)
+            ->addResult("rev-list '-n1' 'refs/tags/1.1.0'", '08708bc0b5c07a8233b6510c4677ad3ad112d5d4')
+            ->addResult('tag', $tags)
+            ->addResult("rev-list '-n1' 'refs/tags/1.2.0'", '08708bc0b5c07a8233b6510c4677ad3ad112d5d4')
+            ->addResult("log '-s' '--pretty=raw' '--no-color' '--max-count=-1' '--skip=0' 'refs/tags/1.2.0..HEAD'", $commit)
+            ->addResult("show '-s' '--pretty=raw' '--no-color' '1.2.0'", $tag)
+            ->addResult("diff '--full-index' '--no-color' '--no-ext-diff' '-M' '--dst-prefix=DST/' '--src-prefix=SRC/' '08708bc0b5c07a8233b6510c4677ad3ad112d5d4^..08708bc0b5c07a8233b6510c4677ad3ad112d5d4'", $diff)
+        ;
 
         $actual = $this->subject->detect(__DIR__, $indicators);
 

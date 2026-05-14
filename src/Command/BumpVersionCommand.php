@@ -169,7 +169,14 @@ final class BumpVersionCommand extends Command\BaseCommand
                 $rootPath = $config->rootPath();
             }
 
-            $results = $this->bumpVersions($config, $rangeOrVersion, $rootPath, $dryRun);
+            // Auto-detect version range from indicators
+            $versionRange = $this->resolveVersionRange($config, $rangeOrVersion, $rootPath);
+
+            if (null === $versionRange) {
+                return self::FAILURE;
+            }
+
+            $results = $this->bumpVersions($config, $versionRange, $rootPath, $dryRun);
 
             if (null === $results) {
                 return self::FAILURE;
@@ -177,7 +184,7 @@ final class BumpVersionCommand extends Command\BaseCommand
 
             $this->decorateVersionBumpResults($results, $rootPath);
 
-            if ($release && !$this->releaseVersion($results, $rootPath, $config->releaseOptions(), $dryRun)) {
+            if ($release && !$this->releaseVersion($results, $rootPath, $config->releaseOptions(), $versionRange, $dryRun)) {
                 return self::FAILURE;
             }
         } catch (Valinor\Mapper\MappingError $error) {
@@ -210,20 +217,11 @@ final class BumpVersionCommand extends Command\BaseCommand
         return self::SUCCESS;
     }
 
-    /**
-     * @return list<Result\VersionBumpResult>|null
-     *
-     * @throws Throwable
-     */
-    private function bumpVersions(
+    private function resolveVersionRange(
         Config\VersionBumperConfig $config,
         ?string $rangeOrVersion,
         string $rootPath,
-        bool $dryRun,
-    ): ?array {
-        $results = [];
-
-        // Auto-detect version range from indicators
+    ): Enum\VersionRange|string|null {
         if (null !== $rangeOrVersion) {
             $versionRange = Enum\VersionRange::tryFromInput($rangeOrVersion) ?? $rangeOrVersion;
         } elseif ([] !== $config->versionRangeIndicators()) {
@@ -246,6 +244,22 @@ final class BumpVersionCommand extends Command\BaseCommand
 
             return null;
         }
+
+        return $versionRange;
+    }
+
+    /**
+     * @return list<Result\VersionBumpResult>|null
+     *
+     * @throws Throwable
+     */
+    private function bumpVersions(
+        Config\VersionBumperConfig $config,
+        Enum\VersionRange|string $versionRange,
+        string $rootPath,
+        bool $dryRun,
+    ): ?array {
+        $results = [];
 
         $this->decorateAppliedPresets($config->presets());
 
@@ -346,12 +360,17 @@ final class BumpVersionCommand extends Command\BaseCommand
      *
      * @throws Exception\Exception
      */
-    private function releaseVersion(array $results, string $rootPath, Config\ReleaseOptions $options, bool $dryRun): bool
-    {
+    private function releaseVersion(
+        array $results,
+        string $rootPath,
+        Config\ReleaseOptions $options,
+        Enum\VersionRange|string $versionRange,
+        bool $dryRun,
+    ): bool {
         $this->io->title('Release');
 
         try {
-            $releaseResult = $this->releaser->release($results, $rootPath, $options, $dryRun);
+            $releaseResult = $this->releaser->release($results, $rootPath, $options, $versionRange, $dryRun);
 
             $this->decorateVersionReleaseResult($releaseResult);
 
@@ -506,13 +525,18 @@ final class BumpVersionCommand extends Command\BaseCommand
     private function decorateVersionReleaseResult(Result\VersionReleaseResult $result): void
     {
         $numberOfCommittedFiles = count($result->committedFiles());
-        $releaseInformation = [
-            sprintf('Added %d file%s.', $numberOfCommittedFiles, 1 !== $numberOfCommittedFiles ? 's' : ''),
-            sprintf('Committed: <info>%s</info>', $result->commitMessage()),
-        ];
+        $releaseInformation = [];
+
+        if ($numberOfCommittedFiles > 0) {
+            $releaseInformation[] = sprintf('Added %d file%s.', $numberOfCommittedFiles, 1 !== $numberOfCommittedFiles ? 's' : '');
+        }
+
+        if (null !== $result->commitMessage()) {
+            $releaseInformation[] = sprintf('Committed: <info>%s</info>', $result->commitMessage());
+        }
 
         if (null !== $result->commitId()) {
-            $releaseInformation[] = sprintf('Commit hash: %s', $result->commitId());
+            $releaseInformation[] = sprintf('Commit hash: <info>%s</info>', $result->commitId());
         }
 
         $releaseInformation[] = sprintf('Tagged: <info>%s</info>', $result->tagName());

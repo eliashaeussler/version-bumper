@@ -73,6 +73,13 @@ final class DummyCaller extends Command\Caller\AbstractCaller
         return $this;
     }
 
+    public function addResult(string $command, string|Throwable $result): self
+    {
+        $this->results[] = [$result, $command];
+
+        return $this;
+    }
+
     public function resetOutput(): void
     {
         $this->rawOutput = '';

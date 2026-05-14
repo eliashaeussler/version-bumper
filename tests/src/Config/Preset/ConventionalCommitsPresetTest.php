@@ -106,14 +106,14 @@ final class ConventionalCommitsPresetTest extends Framework\TestCase
         );
         $diff = (string) file_get_contents(dirname(__DIR__, 2).'/Fixtures/Git/diff-tag-added.txt');
 
-        $caller->results = [
-            ['1.2.0', 'tag'],
-            ['1.2.0', 'tag'],
-            ['08708bc0b5c07a8233b6510c4677ad3ad112d5d4', "rev-list '-n1' 'refs/tags/1.2.0'"],
-            [$commit, "log '-s' '--pretty=raw' '--no-color' '--max-count=-1' '--skip=0' 'refs/tags/1.2.0..HEAD'"],
-            [$tag, "show '-s' '--pretty=raw' '--no-color' '1.2.0'"],
-            [$diff, "diff '--full-index' '--no-color' '--no-ext-diff' '-M' '--dst-prefix=DST/' '--src-prefix=SRC/' '08708bc0b5c07a8233b6510c4677ad3ad112d5d4^..08708bc0b5c07a8233b6510c4677ad3ad112d5d4'"],
-        ];
+        $caller
+            ->addResult('tag', '1.2.0')
+            ->addResult('tag', '1.2.0')
+            ->addResult("rev-list '-n1' 'refs/tags/1.2.0'", '08708bc0b5c07a8233b6510c4677ad3ad112d5d4')
+            ->addResult("log '-s' '--pretty=raw' '--no-color' '--max-count=-1' '--skip=0' 'refs/tags/1.2.0..HEAD'", $commit)
+            ->addResult("show '-s' '--pretty=raw' '--no-color' '1.2.0'", $tag)
+            ->addResult("diff '--full-index' '--no-color' '--no-ext-diff' '-M' '--dst-prefix=DST/' '--src-prefix=SRC/' '08708bc0b5c07a8233b6510c4677ad3ad112d5d4^..08708bc0b5c07a8233b6510c4677ad3ad112d5d4'", $diff)
+        ;
 
         $actual = $versionRangeDetector->detect(__DIR__, $indicators, '1.2.0');
 
