@@ -23,7 +23,11 @@ declare(strict_types=1);
 
 namespace EliasHaeussler\VersionBumper\Helper;
 
+use EliasHaeussler\VersionBumper\Enum;
+use EliasHaeussler\VersionBumper\Exception;
+use EliasHaeussler\VersionBumper\Result;
 use EliasHaeussler\VersionBumper\Version;
+use GitElephant\Repository;
 
 use function addcslashes;
 use function preg_match;
@@ -61,5 +65,60 @@ final readonly class VersionHelper
     public static function replaceVersionInPattern(string $pattern, Version\Version $version): string
     {
         return str_replace(self::VERSION_PLACEHOLDER, $version->full(), $pattern);
+    }
+
+    /**
+     * @param list<Result\VersionBumpResult> $results
+     *
+     * @throws Exception\AmbiguousVersionsDetected
+     */
+    public static function extractVersionFromResults(array $results): ?Version\Version
+    {
+        $version = null;
+
+        foreach ($results as $result) {
+            foreach ($result->operations() as $operation) {
+                $targetVersion = $operation->target();
+
+                if (null === $targetVersion) {
+                    continue;
+                }
+
+                if (null === $version) {
+                    $version = $targetVersion;
+                }
+
+                if ($targetVersion->full() !== $version->full()) {
+                    throw new Exception\AmbiguousVersionsDetected();
+                }
+            }
+        }
+
+        return $version;
+    }
+
+    /**
+     * @throws Exception\CannotFetchLatestGitTag
+     * @throws Exception\VersionIsNotSupported
+     */
+    public static function detectVersionFromVersionRange(
+        Enum\VersionRange|string|null $versionRange,
+        Repository $repository,
+    ): ?Version\Version {
+        if (null === $versionRange) {
+            return null;
+        }
+
+        if (is_string($versionRange)) {
+            return Version\Version::fromFullVersion($versionRange);
+        }
+
+        $tag = GitHelper::fetchLatestVersionTag($repository);
+
+        if (null === $tag) {
+            return null;
+        }
+
+        return Version\Version::fromFullVersion($tag->getName())->increase($versionRange);
     }
 }

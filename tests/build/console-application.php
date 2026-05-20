@@ -27,6 +27,7 @@ use Symfony\Component\Console;
 $application = new Console\Application();
 $application->addCommands([
     new Command\BumpVersionCommand(),
+    new Command\NextVersionCommand(),
 ]);
 
 return $application;
