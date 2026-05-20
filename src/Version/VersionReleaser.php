@@ -32,7 +32,6 @@ use GitElephant\Command;
 use GitElephant\Repository;
 
 use function in_array;
-use function is_string;
 
 /**
  * VersionReleaser.
@@ -70,7 +69,9 @@ final readonly class VersionReleaser
             $repository->setCaller($this->caller);
         }
 
-        $version = $this->extractVersionFromResults($results) ?? $this->detectVersionFromVersionRange($versionRange, $repository);
+        $version = Helper\VersionHelper::extractVersionFromResults($results)
+            ?? Helper\VersionHelper::detectVersionFromVersionRange($versionRange, $repository)
+        ;
 
         if (null === $version) {
             throw new Exception\TargetVersionIsMissing();
@@ -140,59 +141,6 @@ final readonly class VersionReleaser
         $commitId = $repository->getCommit()->getSha();
 
         return [$commitMessage, $commitId];
-    }
-
-    /**
-     * @param list<Result\VersionBumpResult> $results
-     *
-     * @throws Exception\AmbiguousVersionsDetected
-     */
-    private function extractVersionFromResults(array $results): ?Version
-    {
-        $version = null;
-
-        foreach ($results as $result) {
-            foreach ($result->operations() as $operation) {
-                $targetVersion = $operation->target();
-
-                if (null === $targetVersion) {
-                    continue;
-                }
-
-                if (null === $version) {
-                    $version = $targetVersion;
-                }
-
-                if ($targetVersion->full() !== $version->full()) {
-                    throw new Exception\AmbiguousVersionsDetected();
-                }
-            }
-        }
-
-        return $version;
-    }
-
-    /**
-     * @throws Exception\CannotFetchLatestGitTag
-     * @throws Exception\VersionIsNotSupported
-     */
-    private function detectVersionFromVersionRange(Enum\VersionRange|string|null $versionRange, Repository $repository): ?Version
-    {
-        if (null === $versionRange) {
-            return null;
-        }
-
-        if (is_string($versionRange)) {
-            return Version::fromFullVersion($versionRange);
-        }
-
-        $tag = Helper\GitHelper::fetchLatestVersionTag($repository);
-
-        if (null === $tag) {
-            return null;
-        }
-
-        return Version::fromFullVersion($tag->getName())->increase($versionRange);
     }
 
     /**

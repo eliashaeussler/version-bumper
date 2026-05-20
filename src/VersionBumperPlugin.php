@@ -62,6 +62,7 @@ final class VersionBumperPlugin implements Plugin\PluginInterface, Plugin\Capabl
     {
         return [
             new Command\BumpVersionCommand($this->composer),
+            new Command\NextVersionCommand($this->composer),
         ];
     }
 
