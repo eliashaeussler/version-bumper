@@ -49,7 +49,7 @@
 				"path": {
 					"type": "string",
 					"title": "Relative or absolute path to the file",
-					"description": "Relative paths are calculated from the configured (or calculated) project root."
+					"description": "Relative paths are calculated from the configured (or calculated) project root. May contain placeholders processable by the `glob` function."
 				},
 				"patterns": {
 					"type": "array",
