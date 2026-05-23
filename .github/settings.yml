@@ -90,33 +90,35 @@ rulesets:
           strict_required_status_checks_policy: true
           do_not_enforce_on_create: false
           required_status_checks:
-            - context: 'cgl'
+            - context: 'Checks / Perform Composer checks'
               integration_id: 15368
-            - context: 'Tests (PHP 8.2, Composer 2.2 & highest dependencies)'
+            - context: 'Checks / Perform repository checks'
               integration_id: 15368
-            - context: 'Tests (PHP 8.2, Composer 2.2 & lowest dependencies)'
+            - context: 'Tests (PHP 8.2, Composer 2.2 & highest dependencies) / Run tests'
               integration_id: 15368
-            - context: 'Tests (PHP 8.3, Composer 2.2 & highest dependencies)'
+            - context: 'Tests (PHP 8.2, Composer 2.2 & lowest dependencies) / Run tests'
               integration_id: 15368
-            - context: 'Tests (PHP 8.3, Composer 2.2 & lowest dependencies)'
+            - context: 'Tests (PHP 8.3, Composer 2.2 & highest dependencies) / Run tests'
               integration_id: 15368
-            - context: 'Tests (PHP 8.2, Composer 2.9 & highest dependencies)'
+            - context: 'Tests (PHP 8.3, Composer 2.2 & lowest dependencies) / Run tests'
               integration_id: 15368
-            - context: 'Tests (PHP 8.2, Composer 2.9 & lowest dependencies)'
+            - context: 'Tests (PHP 8.2, Composer 2.9 & highest dependencies) / Run tests'
               integration_id: 15368
-            - context: 'Tests (PHP 8.3, Composer 2.9 & highest dependencies)'
+            - context: 'Tests (PHP 8.2, Composer 2.9 & lowest dependencies) / Run tests'
               integration_id: 15368
-            - context: 'Tests (PHP 8.3, Composer 2.9 & lowest dependencies)'
+            - context: 'Tests (PHP 8.3, Composer 2.9 & highest dependencies) / Run tests'
               integration_id: 15368
-            - context: 'Tests (PHP 8.4, Composer 2.9 & highest dependencies)'
+            - context: 'Tests (PHP 8.3, Composer 2.9 & lowest dependencies) / Run tests'
               integration_id: 15368
-            - context: 'Tests (PHP 8.4, Composer 2.9 & lowest dependencies)'
+            - context: 'Tests (PHP 8.4, Composer 2.9 & highest dependencies) / Run tests'
               integration_id: 15368
-            - context: 'Tests (PHP 8.5, Composer 2.9 & highest dependencies)'
+            - context: 'Tests (PHP 8.4, Composer 2.9 & lowest dependencies) / Run tests'
               integration_id: 15368
-            - context: 'Tests (PHP 8.5, Composer 2.9 & lowest dependencies)'
+            - context: 'Tests (PHP 8.5, Composer 2.9 & highest dependencies) / Run tests'
               integration_id: 15368
-            - context: 'Test coverage'
+            - context: 'Tests (PHP 8.5, Composer 2.9 & lowest dependencies) / Run tests'
+              integration_id: 15368
+            - context: 'Test coverage / Collect test coverage'
               integration_id: 15368
     bypass_actors:
       - actor_id: 5
