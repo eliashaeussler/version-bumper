@@ -26,6 +26,9 @@ namespace EliasHaeussler\VersionBumper\Tests\Config;
 use EliasHaeussler\VersionBumper as Src;
 use PHPUnit\Framework;
 
+use function basename;
+use function glob;
+
 /**
  * VersionBumperConfigTest.
  *
@@ -40,23 +43,28 @@ final class VersionBumperConfigTest extends Framework\TestCase
     public function setUp(): void
     {
         $this->subject = new Src\Config\VersionBumperConfig(
-            [
+            presets: [
                 new Src\Config\Preset\Typo3ExtensionPreset(),
             ],
-            [
+            filesToModify: [
                 new Src\Config\FileToModify(
-                    'foo',
+                    '*Test.php',
                     [
-                        'baz: {%version%}',
+                        '{%version%}',
                     ],
                     postActions: [
                         new Src\Version\Action\ComposerLockAction(),
                     ],
                 ),
+                new Src\Config\FileToModify(
+                    __DIR__.'/File*Test.php',
+                    [
+                        '{%version%}',
+                    ],
+                ),
             ],
-            '/foo',
-            new Src\Config\ReleaseOptions(signTag: false),
-            [
+            releaseOptions: new Src\Config\ReleaseOptions(signTag: false),
+            versionRangeIndicators: [
                 new Src\Config\VersionRangeIndicator(
                     Src\Enum\VersionRange::Minor,
                     [
@@ -71,6 +79,68 @@ final class VersionBumperConfigTest extends Framework\TestCase
     }
 
     #[Framework\Attributes\Test]
+    public function constructorSkipsRelativePathsForWildcardResolutionIfRootPathIsMissing(): void
+    {
+        $expected = [
+            new Src\Config\FileToModify(
+                '*Test.php',
+                [
+                    '{%version%}',
+                ],
+                postActions: [
+                    new Src\Version\Action\ComposerLockAction(),
+                ],
+            ),
+            new Src\Config\FileToModify(
+                __DIR__.'/FilePatternTest.php',
+                [
+                    '{%version%}',
+                ],
+            ),
+            new Src\Config\FileToModify(
+                __DIR__.'/FileToModifyTest.php',
+                [
+                    '{%version%}',
+                ],
+            ),
+        ];
+
+        self::assertEquals($expected, $this->subject->filesToModify());
+    }
+
+    #[Framework\Attributes\Test]
+    public function constructorResolvesWildcardsInFiles(): void
+    {
+        $subject = new Src\Config\VersionBumperConfig(
+            filesToModify: [
+                new Src\Config\FileToModify(
+                    '*Test.php',
+                    [
+                        '{%version%}',
+                    ],
+                ),
+            ],
+            rootPath: __DIR__,
+        );
+
+        $files = glob(__DIR__.'/*Test.php');
+        $expected = [];
+
+        self::assertIsArray($files);
+
+        foreach ($files as $file) {
+            $expected[] = new Src\Config\FileToModify(
+                basename($file),
+                [
+                    '{%version%}',
+                ],
+            );
+        }
+
+        self::assertEquals($expected, $subject->filesToModify());
+    }
+
+    #[Framework\Attributes\Test]
     public function hasActionsReturnsTrueIfAnyConfiguredFileHasActionsOfGivenType(): void
     {
         self::assertTrue($this->subject->hasActions(Src\Version\Action\ActionType::PostAction));
@@ -80,6 +150,41 @@ final class VersionBumperConfigTest extends Framework\TestCase
 
         self::assertFalse($subject->hasActions(Src\Version\Action\ActionType::PreAction));
         self::assertFalse($subject->hasActions(Src\Version\Action\ActionType::PostAction));
+    }
+
+    #[Framework\Attributes\Test]
+    public function setRootPathResolvesWildcardsInFiles(): void
+    {
+        $subject = new Src\Config\VersionBumperConfig(
+            filesToModify: [
+                new Src\Config\FileToModify(
+                    '*Test.php',
+                    [
+                        '{%version%}',
+                    ],
+                ),
+            ],
+        );
+
+        self::assertEquals(
+            [
+                new Src\Config\FileToModify('*Test.php', ['{%version%}']),
+            ],
+            $subject->filesToModify(),
+        );
+
+        $files = glob(__DIR__.'/*Test.php');
+        $expected = [];
+
+        self::assertIsArray($files);
+
+        foreach ($files as $file) {
+            $expected[] = new Src\Config\FileToModify(basename($file), ['{%version%}']);
+        }
+
+        $subject->setRootPath(__DIR__);
+
+        self::assertEquals($expected, $subject->filesToModify());
     }
 
     #[Framework\Attributes\Test]
@@ -100,24 +205,35 @@ final class VersionBumperConfigTest extends Framework\TestCase
         );
 
         $expected = new Src\Config\VersionBumperConfig(
-            [
+            presets: [
                 new Src\Config\Preset\Typo3ExtensionPreset(),
                 new Src\Config\Preset\NpmPackagePreset(['path' => 'Build/Frontend']),
             ],
-            [
+            filesToModify: [
                 new Src\Config\FileToModify(
-                    'foo',
+                    '*Test.php',
                     [
-                        'baz: {%version%}',
+                        '{%version%}',
                     ],
                     postActions: [
                         new Src\Version\Action\ComposerLockAction(),
                     ],
                 ),
+                new Src\Config\FileToModify(
+                    __DIR__.'/FilePatternTest.php',
+                    [
+                        '{%version%}',
+                    ],
+                ),
+                new Src\Config\FileToModify(
+                    __DIR__.'/FileToModifyTest.php',
+                    [
+                        '{%version%}',
+                    ],
+                ),
             ],
-            '/foo',
-            new Src\Config\ReleaseOptions(signTag: false),
-            [
+            releaseOptions: new Src\Config\ReleaseOptions(signTag: false),
+            versionRangeIndicators: [
                 new Src\Config\VersionRangeIndicator(
                     Src\Enum\VersionRange::Minor,
                     [
@@ -146,12 +262,24 @@ final class VersionBumperConfigTest extends Framework\TestCase
             ],
             [
                 new Src\Config\FileToModify(
-                    'foo',
+                    '*Test.php',
                     [
-                        'baz: {%version%}',
+                        '{%version%}',
                     ],
                     postActions: [
                         new Src\Version\Action\ComposerLockAction(),
+                    ],
+                ),
+                new Src\Config\FileToModify(
+                    __DIR__.'/FilePatternTest.php',
+                    [
+                        '{%version%}',
+                    ],
+                ),
+                new Src\Config\FileToModify(
+                    __DIR__.'/FileToModifyTest.php',
+                    [
+                        '{%version%}',
                     ],
                 ),
             ],

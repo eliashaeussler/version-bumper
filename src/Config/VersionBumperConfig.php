@@ -25,6 +25,7 @@ namespace EliasHaeussler\VersionBumper\Config;
 
 use EliasHaeussler\VersionBumper\Version;
 use ReflectionObject;
+use Symfony\Component\Filesystem;
 
 use function array_merge;
 use function is_array;
@@ -44,11 +45,13 @@ final class VersionBumperConfig
      */
     public function __construct(
         private readonly array $presets = [],
-        private readonly array $filesToModify = [],
+        private array $filesToModify = [],
         private ?string $rootPath = null,
         private readonly ReleaseOptions $releaseOptions = new ReleaseOptions(),
         private readonly array $versionRangeIndicators = [],
-    ) {}
+    ) {
+        $this->resolveWildcardsInFiles();
+    }
 
     /**
      * @return list<Preset\Preset>
@@ -84,7 +87,13 @@ final class VersionBumperConfig
 
     public function setRootPath(string $rootPath): self
     {
+        $previousRootPath = $this->rootPath;
+
         $this->rootPath = $rootPath;
+
+        if ($previousRootPath !== $rootPath) {
+            $this->resolveWildcardsInFiles();
+        }
 
         return $this;
     }
@@ -132,5 +141,63 @@ final class VersionBumperConfig
 
         /* @phpstan-ignore argument.type */
         return new self(...$properties);
+    }
+
+    private function resolveWildcardsInFiles(): void
+    {
+        $modified = false;
+        $filesToModify = [];
+
+        foreach ($this->filesToModify as $fileToModify) {
+            $path = $fileToModify->path();
+
+            // Skip files without wildcards
+            if (!str_contains($path, '*')) {
+                $filesToModify[] = $fileToModify;
+
+                continue;
+            }
+
+            $isRelative = Filesystem\Path::isRelative($path);
+
+            if ($isRelative) {
+                // We cannot process relative paths if root path is not set
+                if (null === $this->rootPath) {
+                    $filesToModify[] = $fileToModify;
+
+                    continue;
+                }
+
+                $fullPath = $fileToModify->fullPath($this->rootPath);
+            } else {
+                $fullPath = $path;
+            }
+
+            $files = glob($fullPath);
+
+            // Skip wildcard resolution if glob fails
+            if (false === $files) {
+                $filesToModify[] = $fileToModify;
+
+                continue;
+            }
+
+            foreach ($files as $file) {
+                $filesToModify[] = new FileToModify(
+                    $isRelative ? Filesystem\Path::makeRelative($file, $this->rootPath) : $file,
+                    $fileToModify->patterns(),
+                    $fileToModify->reportUnmatched(),
+                    $fileToModify->reportMissing(),
+                    $fileToModify->preActions(),
+                    $fileToModify->postActions(),
+                );
+            }
+
+            $modified = true;
+        }
+
+        if ($modified) {
+            $this->filesToModify = $filesToModify;
+        }
     }
 }
