@@ -55,6 +55,9 @@
 			"ergebnis/composer-normalize": true,
 			"phpstan/extension-installer": true
 		},
+		"audit": {
+			"abandoned": "report"
+		},
 		"sort-packages": true
 	},
 	"extra": {
