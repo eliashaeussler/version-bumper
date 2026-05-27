@@ -22,6 +22,6 @@ jobs:
           persist-credentials: false
 
       - name: 'Create release'
-        uses: eliashaeussler/gha/.github/actions/create-release@dc5fa2548158a3fb7537863ff248cfc98596b06a # 0.2.0
+        uses: eliashaeussler/gha/.github/actions/create-release@24e339c643ee01a7e008b13e40bcee4155c479fa # 0.2.3
         with:
           artifact-name: ${{ needs.assets.outputs.phar-artifact-name }}
