@@ -1,27 +1,17 @@
 name: Release
+
 on:
   push:
     tags:
       - '*'
 
-env:
-  REF_NAME: ${{ github.ref_name }}
-
 jobs:
   release:
     name: 'Create release'
-    runs-on: ubuntu-latest
 
     permissions:
       contents: write
 
-    steps:
-      - name: 'Checkout'
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with:
-          persist-credentials: false
-
-      - name: 'Create release'
-        uses: eliashaeussler/gha/.github/actions/create-release@24e339c643ee01a7e008b13e40bcee4155c479fa # 0.2.3
-        with:
-          artifact-name: ${{ needs.assets.outputs.phar-artifact-name }}
+    uses: eliashaeussler/gha/.github/workflows/github-release.yaml@fc2d281222c21b39eb2f2d531a56c86c0e8ae76a # 0.3.1
+    with:
+      artifact-name: ${{ needs.assets.outputs.phar-artifact-name }}
