@@ -49,7 +49,7 @@ final readonly class DeprecationMessage
     ) {}
 
     /**
-     * @param array{function?: string, args?: list<mixed>} $trace
+     * @param array{function?: string, args?: list<mixed>, ...} $trace
      */
     public static function fromTrace(array $trace): ?self
     {
