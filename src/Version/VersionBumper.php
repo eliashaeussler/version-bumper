@@ -23,8 +23,10 @@ declare(strict_types=1);
 
 namespace EliasHaeussler\VersionBumper\Version;
 
+use Composer\EventDispatcher;
 use EliasHaeussler\VersionBumper\Config;
 use EliasHaeussler\VersionBumper\Enum;
+use EliasHaeussler\VersionBumper\Event;
 use EliasHaeussler\VersionBumper\Exception;
 use EliasHaeussler\VersionBumper\Result;
 
@@ -42,6 +44,12 @@ use function substr_replace;
  */
 final readonly class VersionBumper
 {
+    use Event\Dispatchable;
+
+    public function __construct(
+        private ?EventDispatcher\EventDispatcher $eventDispatcher = null,
+    ) {}
+
     /**
      * @param list<Config\FileToModify> $files
      *
@@ -65,7 +73,13 @@ final readonly class VersionBumper
         $results = [];
 
         foreach ($files as $file) {
-            $results[] = $this->bumpVersionsInFile($file, $rootPath, $versionRange, $dryRun);
+            $result = $this->bumpVersionsInFile($file, $rootPath, $versionRange, $dryRun);
+
+            $this->dispatchEvent(
+                new Event\VersionBumped($file, $versionRange, $result, $dryRun),
+            );
+
+            $results[] = $result;
         }
 
         return $results;

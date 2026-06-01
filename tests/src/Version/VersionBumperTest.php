@@ -23,6 +23,7 @@ declare(strict_types=1);
 
 namespace EliasHaeussler\VersionBumper\Tests\Version;
 
+use Composer\EventDispatcher;
 use EliasHaeussler\VersionBumper as Src;
 use PHPUnit\Framework;
 
@@ -269,5 +270,56 @@ BAZ,
         } finally {
             file_put_contents($bazFile->fullPath($rootPath), $contentBackup);
         }
+    }
+
+    #[Framework\Attributes\Test]
+    public function bumpDispatchesVersionBumpedEvent(): void
+    {
+        $eventDispatcher = $this->createMock(EventDispatcher\EventDispatcher::class);
+        $subject = new Src\Version\VersionBumper($eventDispatcher);
+
+        $fooFile = $this->filesToModify[0];
+        $files = [$fooFile];
+        $rootPath = dirname(__DIR__).'/Fixtures/RootPath';
+
+        $expected = new Src\Event\VersionBumped(
+            $fooFile,
+            Src\Enum\VersionRange::Minor,
+            new Src\Result\VersionBumpResult(
+                $fooFile,
+                [
+                    new Src\Result\WriteOperation(
+                        new Src\Version\Version(1, 0, 0),
+                        new Src\Version\Version(1, 1, 0),
+                        <<<FOO
+baz: 1.1.0
+baz: 1.0.0
+
+FOO,
+                        new Src\Config\FilePattern('baz: {%version%}'),
+                        Src\Enum\OperationState::Modified,
+                    ),
+                    new Src\Result\WriteOperation(
+                        new Src\Version\Version(1, 0, 0),
+                        new Src\Version\Version(1, 1, 0),
+                        <<<FOO
+baz: 1.1.0
+baz: 1.1.0
+
+FOO,
+                        new Src\Config\FilePattern('baz: {%version%}'),
+                        Src\Enum\OperationState::Modified,
+                    ),
+                ],
+            ),
+            true,
+        );
+
+        $eventDispatcher->expects(self::once())
+            ->method('dispatch')
+            ->with('version-bumped', $expected)
+        ;
+
+        $subject->bump($files, $rootPath, Src\Enum\VersionRange::Minor, true);
     }
 }

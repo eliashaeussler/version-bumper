@@ -23,7 +23,9 @@ declare(strict_types=1);
 
 namespace EliasHaeussler\VersionBumper\Config;
 
+use Composer\EventDispatcher;
 use CuyZ\Valinor;
+use EliasHaeussler\VersionBumper\Event;
 use EliasHaeussler\VersionBumper\Exception;
 use EliasHaeussler\VersionBumper\Version;
 use SplFileObject;
@@ -41,11 +43,14 @@ use function is_callable;
  */
 final readonly class ConfigReader
 {
+    use Event\Dispatchable;
+
     private Filesystem\Filesystem $filesystem;
     private Valinor\Mapper\TreeMapper $mapper;
 
-    public function __construct()
-    {
+    public function __construct(
+        private ?EventDispatcher\EventDispatcher $eventDispatcher = null,
+    ) {
         $this->filesystem = new Filesystem\Filesystem();
         $this->mapper = $this->createMapper();
     }
@@ -86,6 +91,10 @@ final readonly class ConfigReader
         foreach ($config->presets() as $preset) {
             $config = $config->merge($preset->getConfig($config));
         }
+
+        $this->dispatchEvent(
+            new Event\ConfigResolved($config),
+        );
 
         return $config;
     }
