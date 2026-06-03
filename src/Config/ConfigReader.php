@@ -84,7 +84,9 @@ final readonly class ConfigReader
         }
 
         foreach ($config->presets() as $preset) {
-            $config = $config->merge($preset->getConfig($config));
+            // Merge user config on top of preset defaults so that explicit
+            // user values (e.g. releaseOptions, rootPath) win over preset values.
+            $config = $preset->getConfig($config)->merge($config);
         }
 
         return $config;

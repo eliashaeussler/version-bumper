@@ -240,7 +240,6 @@ final class ConfigReaderTest extends Framework\TestCase
                     ]),
                 ],
                 [
-                    $fileToModify,
                     new Src\Config\FileToModify(
                         'foo/composer.json',
                         [
@@ -253,6 +252,7 @@ final class ConfigReaderTest extends Framework\TestCase
                             new Src\Version\Action\ComposerLockAction(),
                         ],
                     ),
+                    $fileToModify,
                 ],
                 $rootPath,
             ),
@@ -265,7 +265,6 @@ final class ConfigReaderTest extends Framework\TestCase
                     new Src\Config\Preset\ComposerPackagePreset(),
                 ],
                 [
-                    $fileToModify,
                     new Src\Config\FileToModify(
                         'composer.json',
                         [
@@ -278,6 +277,7 @@ final class ConfigReaderTest extends Framework\TestCase
                             new Src\Version\Action\ComposerLockAction(),
                         ],
                     ),
+                    $fileToModify,
                 ],
                 $rootPath,
             ),
@@ -292,7 +292,6 @@ final class ConfigReaderTest extends Framework\TestCase
                     ]),
                 ],
                 [
-                    $fileToModify,
                     new Src\Config\FileToModify(
                         'foo/package.json',
                         [
@@ -305,6 +304,7 @@ final class ConfigReaderTest extends Framework\TestCase
                             new Src\Version\Action\PackageLockAction(),
                         ],
                     ),
+                    $fileToModify,
                 ],
                 $rootPath,
             ),
@@ -317,7 +317,6 @@ final class ConfigReaderTest extends Framework\TestCase
                     new Src\Config\Preset\Typo3ExtensionPreset(['documentation' => true]),
                 ],
                 [
-                    $fileToModify,
                     new Src\Config\FileToModify(
                         'ext_emconf.php',
                         [
@@ -344,6 +343,7 @@ final class ConfigReaderTest extends Framework\TestCase
                         ],
                         true,
                     ),
+                    $fileToModify,
                 ],
                 $rootPath,
                 new Src\Config\ReleaseOptions('[RELEASE] Release of EXT:foo {%version%}'),
@@ -357,7 +357,6 @@ final class ConfigReaderTest extends Framework\TestCase
                     new Src\Config\Preset\Typo3ExtensionPreset(),
                 ],
                 [
-                    $fileToModify,
                     new Src\Config\FileToModify(
                         'ext_emconf.php',
                         [
@@ -393,6 +392,7 @@ final class ConfigReaderTest extends Framework\TestCase
                         true,
                         false,
                     ),
+                    $fileToModify,
                 ],
                 $rootPath,
                 new Src\Config\ReleaseOptions('[RELEASE] Release of EXT:foo {%version%}'),
@@ -408,6 +408,20 @@ final class ConfigReaderTest extends Framework\TestCase
         $file = $rootPath.'/valid-config-with-'.$preset.'-preset.json';
 
         self::assertEquals($expected, $this->subject->readFromFile($file));
+    }
+
+    #[Framework\Attributes\Test]
+    public function readFromFileKeepsUserDefinedReleaseOptionsWhenPresetProvidesOwnOptions(): void
+    {
+        $rootPath = dirname(__DIR__).'/Fixtures/ConfigFiles';
+        $file = $rootPath.'/valid-config-with-typo3-extension-preset-and-custom-release-options.json';
+
+        $config = $this->subject->readFromFile($file);
+
+        self::assertSame(
+            'release: version {%version%}',
+            $config->releaseOptions()->commitMessage(),
+        );
     }
 
     #[Framework\Attributes\Test]
