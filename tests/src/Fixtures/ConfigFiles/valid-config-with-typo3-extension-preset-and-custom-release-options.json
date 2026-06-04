@@ -1,0 +1,17 @@
+{
+	"presets": [
+		"typo3-extension"
+	],
+	"filesToModify": [
+		{
+			"path": "baz",
+			"patterns": [
+				"foo: {%version%}"
+			]
+		}
+	],
+	"releaseOptions": {
+		"commitMessage": "release: version {%version%}"
+	},
+	"rootPath": "../RootPath"
+}
