@@ -23,13 +23,10 @@ declare(strict_types=1);
 
 namespace EliasHaeussler\VersionBumper\Command;
 
-use Composer\Command;
 use Composer\Composer;
-use CuyZ\Valinor;
 use EliasHaeussler\TaskRunner;
 use EliasHaeussler\VersionBumper\Config;
 use EliasHaeussler\VersionBumper\Enum;
-use EliasHaeussler\VersionBumper\Error;
 use EliasHaeussler\VersionBumper\Exception;
 use EliasHaeussler\VersionBumper\Result;
 use EliasHaeussler\VersionBumper\Version;
@@ -41,16 +38,9 @@ use Throwable;
 use function array_filter;
 use function array_map;
 use function count;
-use function dirname;
-use function getcwd;
 use function implode;
-use function is_string;
-use function method_exists;
 use function reset;
-use function restore_error_handler;
-use function set_error_handler;
 use function sprintf;
-use function trim;
 use function usort;
 
 /**
@@ -59,38 +49,28 @@ use function usort;
  * @author Elias Häußler <elias@haeussler.dev>
  * @license GPL-3.0-or-later
  */
-final class BumpVersionCommand extends Command\BaseCommand
+final class BumpVersionCommand extends BaseVersionCommand
 {
     private readonly Version\VersionBumper $bumper;
-    private readonly Config\ConfigReader $configReader;
     private readonly Version\VersionRangeDetector $versionRangeDetector;
     private readonly Version\VersionReleaser $releaser;
-    private Console\Style\SymfonyStyle $io;
     private TaskRunner\TaskRunner $taskRunner;
-
-    /**
-     * @var list<Error\DeprecationMessage>
-     */
-    private array $deprecations = [];
 
     public function __construct(
         ?Composer $composer = null,
         ?Caller\CallerInterface $caller = null,
     ) {
-        if (null !== $composer) {
-            $this->setComposer($composer);
-        }
-
-        parent::__construct('bump-version');
+        parent::__construct('bump-version', $composer);
 
         $this->bumper = new Version\VersionBumper();
-        $this->configReader = new Config\ConfigReader();
         $this->versionRangeDetector = new Version\VersionRangeDetector($caller);
         $this->releaser = new Version\VersionReleaser($caller);
     }
 
     protected function configure(): void
     {
+        parent::configure();
+
         $this->setAliases(['bv']);
         $this->setDescription('Bump package version in specific files during release preparations');
 
@@ -103,13 +83,6 @@ final class BumpVersionCommand extends Command\BaseCommand
             ),
         );
 
-        $this->addOption(
-            'config',
-            'c',
-            Console\Input\InputOption::VALUE_REQUIRED,
-            'Path to configuration file (JSON, YAML or PHP) with files in which to bump new versions',
-            $this->readConfigFileFromRootPackage(),
-        );
         $this->addOption(
             'release',
             'r',
@@ -132,43 +105,23 @@ final class BumpVersionCommand extends Command\BaseCommand
 
     protected function initialize(Console\Input\InputInterface $input, Console\Output\OutputInterface $output): void
     {
-        $this->io = new Console\Style\SymfonyStyle($input, $output);
+        parent::initialize($input, $output);
+
         $this->taskRunner = new TaskRunner\TaskRunner($this->io);
-        $this->deprecations = [];
     }
 
-    protected function execute(Console\Input\InputInterface $input, Console\Output\OutputInterface $output): int
-    {
-        $rootPath = (string) getcwd();
+    protected function executeCommand(
+        Config\VersionBumperConfig $config,
+        string $rootPath,
+        Console\Input\InputInterface $input,
+        Console\Output\OutputInterface $output,
+    ): int {
         $rangeOrVersion = $input->getArgument('range');
-        $configFile = $input->getOption('config') ?? $this->configReader->detectFile($rootPath);
         $release = $input->getOption('release');
         $dryRun = $input->getOption('dry-run');
         $strict = $input->getOption('strict');
 
-        if (null === $configFile) {
-            $this->io->error('Please provide a config file path using the --config option.');
-
-            return self::INVALID;
-        }
-
-        if (Filesystem\Path::isRelative($configFile)) {
-            $configFile = Filesystem\Path::makeAbsolute($configFile, $rootPath);
-        } else {
-            $rootPath = dirname($configFile);
-        }
-
-        // Register custom error handler to collect deprecations from config presets
-        set_error_handler($this->collectDeprecations(...), E_USER_DEPRECATED);
-
         try {
-            $config = $this->configReader->readFromFile($configFile);
-
-            // Override root path from config file
-            if (null !== $config->rootPath()) {
-                $rootPath = $config->rootPath();
-            }
-
             // Auto-detect version range from indicators
             $versionRange = $this->resolveVersionRange($config, $rangeOrVersion, $rootPath);
 
@@ -187,23 +140,10 @@ final class BumpVersionCommand extends Command\BaseCommand
             if ($release && !$this->releaseVersion($results, $rootPath, $config->releaseOptions(), $versionRange, $dryRun)) {
                 return self::FAILURE;
             }
-        } catch (Valinor\Mapper\MappingError $error) {
-            $this->decorateMappingError($error, $configFile);
-
-            return self::FAILURE;
-        } catch (Exception\Exception $exception) {
-            $this->io->error($exception->getMessage());
-
-            return self::FAILURE;
         } finally {
-            // Restore original error handler
-            restore_error_handler();
-
             if ($dryRun) {
                 $this->io->note('No write operations were performed (dry-run mode).');
             }
-
-            $this->decorateDeprecationMessages();
         }
 
         if ($strict) {
@@ -416,30 +356,6 @@ final class BumpVersionCommand extends Command\BaseCommand
         }
     }
 
-    private function decorateDeprecationMessages(): void
-    {
-        if ([] === $this->deprecations) {
-            return;
-        }
-
-        $this->io->warning('Your config file contains deprecated options.');
-
-        $this->io->listing(
-            array_map(
-                static fn (Error\DeprecationMessage $deprecation) => implode('', [
-                    $deprecation->origin() instanceof Config\Preset\Preset
-                        ? sprintf('<fg=yellow>%s</>: ', $deprecation->origin()::getIdentifier())
-                        : '',
-                    $deprecation->message(),
-                    null !== $deprecation->since()
-                        ? sprintf(' <fg=yellow>(deprecated since v%s)</>', $deprecation->since())
-                        : '',
-                ]),
-                $this->deprecations,
-            ),
-        );
-    }
-
     /**
      * @param list<Config\Preset\Preset> $presets
      */
@@ -550,63 +466,5 @@ final class BumpVersionCommand extends Command\BaseCommand
         $releaseInformation[] = sprintf('Tagged: <info>%s</info>', $result->tagName());
 
         $this->io->listing($releaseInformation);
-    }
-
-    private function decorateMappingError(Valinor\Mapper\MappingError $error, string $configFile): void
-    {
-        $errorMessages = [];
-        $errors = $error->messages()->errors();
-
-        $this->io->error(
-            sprintf('The config file "%s" is invalid.', $configFile),
-        );
-
-        foreach ($errors as $propertyError) {
-            $errorMessages[] = sprintf('%s: %s', $propertyError->path(), $propertyError->toString());
-        }
-
-        $this->io->listing($errorMessages);
-    }
-
-    private function readConfigFileFromRootPackage(): ?string
-    {
-        $composer = $this->getComposerInstance();
-
-        if (null === $composer) {
-            return null;
-        }
-
-        $extra = $composer->getPackage()->getExtra();
-        /* @phpstan-ignore offsetAccess.nonOffsetAccessible */
-        $configFile = $extra['version-bumper']['config-file'] ?? null;
-
-        if (is_string($configFile) && '' !== trim($configFile)) {
-            return $configFile;
-        }
-
-        return null;
-    }
-
-    private function collectDeprecations(int $errno, string $errstr): bool
-    {
-        $deprecationMessage = Error\DeprecationMessage::fromTraceOrMessage($errstr);
-        $collected = null !== $deprecationMessage;
-
-        if ($collected) {
-            $this->deprecations[] = $deprecationMessage;
-        }
-
-        return $collected;
-    }
-
-    private function getComposerInstance(): ?Composer
-    {
-        // Composer >= 2.3
-        if (method_exists($this, 'tryComposer')) {
-            return $this->tryComposer();
-        }
-
-        // Composer < 2.3
-        return $this->getComposer(false);
     }
 }

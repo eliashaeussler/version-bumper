@@ -38,7 +38,7 @@ return static function (RectorConfig $rectorConfig): void {
         ->withPHPUnit()
         ->withSymfony()
         ->skip(NullToStrictStringFuncCallArgRector::class, [
-            'src/Command/BumpVersionCommand.php',
+            'src/Command/BaseVersionCommand.php',
         ])
         ->apply()
     ;

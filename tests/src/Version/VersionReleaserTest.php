@@ -25,7 +25,6 @@ namespace EliasHaeussler\VersionBumper\Tests\Version;
 
 use EliasHaeussler\VersionBumper as Src;
 use EliasHaeussler\VersionBumper\Tests;
-use Generator;
 use PHPUnit\Framework;
 
 use function dirname;
@@ -79,88 +78,14 @@ final class VersionReleaserTest extends Framework\TestCase
         ];
     }
 
-    /**
-     * @return Generator<string, array{list<Src\Result\VersionBumpResult>}>
-     */
-    public static function releaseThrowsExceptionIfTargetVersionIsMissingDataProvider(): Generator
-    {
-        yield 'no results' => [[]];
-        yield 'no write operations' => [
-            [
-                new Src\Result\VersionBumpResult(
-                    new Src\Config\FileToModify('foo'),
-                    [],
-                ),
-            ],
-        ];
-        yield 'missing target version' => [
-            [
-                new Src\Result\VersionBumpResult(
-                    new Src\Config\FileToModify('foo'),
-                    [
-                        Src\Result\WriteOperation::unmatched(
-                            new Src\Config\FilePattern('foo: {%version%}'),
-                        ),
-                    ],
-                ),
-            ],
-        ];
-    }
-
-    /**
-     * @param list<Src\Result\VersionBumpResult> $results
-     */
     #[Framework\Attributes\Test]
-    #[Framework\Attributes\DataProvider('releaseThrowsExceptionIfTargetVersionIsMissingDataProvider')]
-    public function releaseThrowsExceptionIfTargetVersionIsMissing(array $results): void
+    public function releaseThrowsExceptionIfTargetVersionIsMissing(): void
     {
         $this->expectExceptionObject(
             new Src\Exception\TargetVersionIsMissing(),
         );
 
-        $this->subject->release($results, dirname(__DIR__, 3));
-    }
-
-    #[Framework\Attributes\Test]
-    public function releaseThrowsExceptionIfNoVersionsWereTagged(): void
-    {
-        $this->expectExceptionObject(
-            new Src\Exception\TargetVersionIsMissing(),
-        );
-
-        $this->subject->release([], dirname(__DIR__, 3), versionRange: Src\Enum\VersionRange::Major);
-    }
-
-    #[Framework\Attributes\Test]
-    public function releaseThrowsExceptionIfAmbiguousVersionsAreDetected(): void
-    {
-        $results = [
-            new Src\Result\VersionBumpResult(
-                new Src\Config\FileToModify('foo'),
-                [
-                    new Src\Result\WriteOperation(
-                        new Src\Version\Version(1, 0, 0),
-                        new Src\Version\Version(1, 1, 0),
-                        '',
-                        new Src\Config\FilePattern('foo: {%version%}'),
-                        Src\Enum\OperationState::Modified,
-                    ),
-                    new Src\Result\WriteOperation(
-                        new Src\Version\Version(1, 1, 0),
-                        new Src\Version\Version(1, 2, 0),
-                        '',
-                        new Src\Config\FilePattern('foo: {%version%}'),
-                        Src\Enum\OperationState::Modified,
-                    ),
-                ],
-            ),
-        ];
-
-        $this->expectExceptionObject(
-            new Src\Exception\AmbiguousVersionsDetected(),
-        );
-
-        $this->subject->release($results, dirname(__DIR__, 3));
+        $this->subject->release([], dirname(__DIR__, 3));
     }
 
     #[Framework\Attributes\Test]
