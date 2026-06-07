@@ -12,6 +12,6 @@ jobs:
     permissions:
       contents: write
 
-    uses: eliashaeussler/gha/.github/workflows/github-release.yaml@61021346542aab8ca5cd441199b82b05db5c67fd # 0.6.0
+    uses: eliashaeussler/gha/.github/workflows/github-release.yaml@39747882312d1fbeaff9792b2a8e2eb00ddc640f # 0.6.2
     with:
       artifact-name: ${{ needs.assets.outputs.phar-artifact-name }}
