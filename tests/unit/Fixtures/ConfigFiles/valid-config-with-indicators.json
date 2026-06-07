@@ -1,7 +1,7 @@
 {
 	"filesToModify": [
 		{
-			"path": "tests/src/Fixtures/RootPath/foo",
+			"path": "tests/unit/Fixtures/RootPath/foo",
 			"patterns": [
 				"baz: {%version%}"
 			]

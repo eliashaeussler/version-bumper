@@ -47,7 +47,7 @@
 	},
 	"autoload-dev": {
 		"psr-4": {
-			"EliasHaeussler\\VersionBumper\\Tests\\": "tests/src/"
+			"EliasHaeussler\\VersionBumper\\Tests\\": "tests/unit/"
 		}
 	},
 	"config": {
@@ -72,12 +72,12 @@
 			"@check:static",
 			"@check:style"
 		],
-		"check:deps": "composer-dependency-analyser",
+		"check:deps": "composer-dependency-analyser --config build/checks/composer-dependency-analyser.php",
 		"check:refactor": [
 			"@check:refactor:php"
 		],
 		"check:refactor:php": "@refactor:php --dry-run",
-		"check:static": "phpstan analyse -c phpstan.php",
+		"check:static": "phpstan analyse -c build/checks/phpstan.php",
 		"check:style": [
 			"@check:style:composer",
 			"@check:style:editorconfig",
@@ -101,12 +101,12 @@
 		],
 		"fix:composer": "@composer normalize",
 		"fix:editorconfig": "@check:style:editorconfig --fix",
-		"fix:php": "php-cs-fixer fix",
+		"fix:php": "php-cs-fixer fix --config build/checks/.php-cs-fixer.php",
 		"refactor": [
 			"@refactor:php"
 		],
-		"refactor:php": "rector process -c rector.php",
+		"refactor:php": "rector process -c build/checks/rector.php",
 		"test": "@test:coverage --no-coverage",
-		"test:coverage": "phpunit -c phpunit.xml"
+		"test:coverage": "phpunit -c build/tests/phpunit.xml"
 	}
 }

@@ -27,18 +27,20 @@ use Rector\Php81\Rector\FuncCall\NullToStrictStringFuncCallArgRector;
 use Rector\ValueObject\PhpVersion;
 
 return static function (RectorConfig $rectorConfig): void {
+    $rootPath = dirname(__DIR__, 2);
+
     Config::create($rectorConfig, PhpVersion::PHP_82)
         ->in(
-            __DIR__.'/src',
-            __DIR__.'/tests',
+            $rootPath.'/src',
+            $rootPath.'/tests',
         )
         ->not(
-            __DIR__.'/tests/src/Fixtures',
+            $rootPath.'/tests/unit/Fixtures',
         )
         ->withPHPUnit()
         ->withSymfony()
         ->skip(NullToStrictStringFuncCallArgRector::class, [
-            'src/Command/BumpVersionCommand.php',
+            $rootPath.'/src/Command/BumpVersionCommand.php',
         ])
         ->apply()
     ;

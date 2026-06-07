@@ -24,7 +24,7 @@ declare(strict_types=1);
 use ShipMonk\ComposerDependencyAnalyser;
 
 return (new ComposerDependencyAnalyser\Config\Configuration())
-    ->addPathToExclude('tests/src/Fixtures')
+    ->addPathToExclude('tests/unit/Fixtures')
     ->ignoreErrorsOnPackage(
         'composer/composer',
         [ComposerDependencyAnalyser\Config\ErrorType::DEV_DEPENDENCY_IN_PROD],
