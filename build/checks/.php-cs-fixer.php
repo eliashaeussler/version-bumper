@@ -24,6 +24,7 @@ declare(strict_types=1);
 use EliasHaeussler\PhpCsFixerConfig;
 use Symfony\Component\Finder;
 
+$rootPath = dirname(__DIR__, 2);
 $header = PhpCsFixerConfig\Rules\Header::create(
     'eliashaeussler/version-bumper',
     PhpCsFixerConfig\Package\Type::ComposerPackage,
@@ -34,5 +35,5 @@ $header = PhpCsFixerConfig\Rules\Header::create(
 
 return PhpCsFixerConfig\Config::create()
     ->withRule($header)
-    ->withFinder(static fn (Finder\Finder $finder) => $finder->in(__DIR__))
+    ->withFinder(static fn (Finder\Finder $finder) => $finder->in($rootPath))
 ;
