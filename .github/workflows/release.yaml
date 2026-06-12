@@ -5,13 +5,10 @@ on:
     tags:
       - '*'
 
+permissions:
+  contents: write
+
 jobs:
   release:
     name: 'Create release'
-
-    permissions:
-      contents: write
-
     uses: eliashaeussler/gha/.github/workflows/github-release.yaml@5344de65c90275de4c729d973f1fe7246ea23ee1 # 0.6.3
-    with:
-      artifact-name: ${{ needs.assets.outputs.phar-artifact-name }}
