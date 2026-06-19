@@ -148,16 +148,16 @@
         },
         {
             "name": "eliashaeussler/task-runner",
-            "version": "1.2.2",
+            "version": "1.2.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/eliashaeussler/task-runner.git",
-                "reference": "286f3e94b6f94126106a9f2c16c787afc70ddab1"
+                "reference": "89c8309b40f6bdbbb6cb89ed15982bcba3528013"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/eliashaeussler/task-runner/zipball/286f3e94b6f94126106a9f2c16c787afc70ddab1",
-                "reference": "286f3e94b6f94126106a9f2c16c787afc70ddab1",
+                "url": "https://api.github.com/repos/eliashaeussler/task-runner/zipball/89c8309b40f6bdbbb6cb89ed15982bcba3528013",
+                "reference": "89c8309b40f6bdbbb6cb89ed15982bcba3528013",
                 "shasum": ""
             },
             "require": {
@@ -173,7 +173,7 @@
                 "ergebnis/composer-normalize": "^2.48",
                 "phpstan/extension-installer": "^1.4",
                 "phpstan/phpstan-phpunit": "^2.0",
-                "phpunit/phpunit": "^11.5 || ^12.5",
+                "phpunit/phpunit": "^11.5 || ^12.5 || ^13.0",
                 "shipmonk/composer-dependency-analyser": "^1.8"
             },
             "type": "library",
@@ -197,9 +197,9 @@
             "description": "Progress helper for long-running CLI tasks, based on Symfony Console",
             "support": {
                 "issues": "https://github.com/eliashaeussler/task-runner/issues",
-                "source": "https://github.com/eliashaeussler/task-runner/tree/1.2.2"
+                "source": "https://github.com/eliashaeussler/task-runner/tree/1.2.3"
             },
-            "time": "2026-01-06T11:25:33+00:00"
+            "time": "2026-06-18T18:59:00+00:00"
         },
         {
             "name": "phpoption/phpoption",
