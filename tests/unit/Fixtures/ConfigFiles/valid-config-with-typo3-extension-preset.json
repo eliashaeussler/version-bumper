@@ -15,5 +15,8 @@
 			]
 		}
 	],
+	"releaseOptions": {
+		"signTag": true
+	},
 	"rootPath": "../RootPath"
 }

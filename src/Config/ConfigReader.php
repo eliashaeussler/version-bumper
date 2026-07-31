@@ -26,12 +26,17 @@ namespace EliasHaeussler\VersionBumper\Config;
 use CuyZ\Valinor;
 use EliasHaeussler\VersionBumper\Exception;
 use EliasHaeussler\VersionBumper\Version;
+use ReflectionObject;
 use SplFileObject;
 use Symfony\Component\Filesystem;
 use Symfony\Component\Yaml;
 
+use function array_merge;
 use function dirname;
+use function is_a;
+use function is_array;
 use function is_callable;
+use function is_object;
 
 /**
  * ConfigReader.
@@ -86,7 +91,7 @@ final readonly class ConfigReader
         foreach ($config->presets() as $preset) {
             // Merge user config on top of preset defaults so that explicit
             // user values (e.g. releaseOptions, rootPath) win over preset values.
-            $config = $preset->getConfig($config)->merge($config);
+            $config = $this->mergeObjects($preset->getConfig($config), $config);
         }
 
         return $config;
@@ -150,6 +155,45 @@ final readonly class ConfigReader
         }
 
         return $yaml;
+    }
+
+    /**
+     * @template T of object
+     *
+     * @param T $a
+     * @param T $b
+     *
+     * @return T
+     */
+    private function mergeObjects(object $a, object $b): object
+    {
+        if (!is_a($b, $a::class)) {
+            throw new Exception\ObjectsAreIncompatible($a, $b);
+        }
+
+        $reflection = new ReflectionObject($b);
+        $parameters = $reflection->getConstructor()?->getParameters() ?? [];
+        $properties = [];
+
+        foreach ($parameters as $parameter) {
+            $property = $reflection->getProperty($parameter->getName());
+            $aValue = $property->getValue($a);
+            $bValue = $property->getValue($b);
+
+            /* @phpstan-ignore notEqual.notAllowed (Loose comparison is intended as we may compare objects) */
+            if ($parameter->getDefaultValue() != $bValue) {
+                $aValue = match (true) {
+                    is_array($aValue) && is_array($bValue) => array_merge($aValue, $bValue),
+                    is_object($aValue) && is_object($bValue) => $this->mergeObjects($aValue, $bValue),
+                    default => $bValue,
+                };
+            }
+
+            $properties[] = $aValue;
+        }
+
+        /* @phpstan-ignore return.type (Revisit once https://github.com/phpstan/phpstan/issues/15032 is solved) */
+        return $reflection->newInstance(...$properties);
     }
 
     private function createMapper(): Valinor\Mapper\TreeMapper

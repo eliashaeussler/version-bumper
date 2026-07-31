@@ -346,7 +346,10 @@ final class ConfigReaderTest extends Framework\TestCase
                     $fileToModify,
                 ],
                 $rootPath,
-                new Src\Config\ReleaseOptions('[RELEASE] Release of EXT:foo {%version%}'),
+                new Src\Config\ReleaseOptions(
+                    commitMessage: '[RELEASE] Release of EXT:foo {%version%}',
+                    signTag: true,
+                ),
             ),
         ];
 
