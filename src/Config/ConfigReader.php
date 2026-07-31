@@ -26,14 +26,13 @@ namespace EliasHaeussler\VersionBumper\Config;
 use CuyZ\Valinor;
 use EliasHaeussler\VersionBumper\Exception;
 use EliasHaeussler\VersionBumper\Version;
-use ReflectionObject;
+use ReflectionClass;
 use SplFileObject;
 use Symfony\Component\Filesystem;
 use Symfony\Component\Yaml;
 
 use function array_merge;
 use function dirname;
-use function is_a;
 use function is_array;
 use function is_callable;
 use function is_object;
@@ -167,11 +166,11 @@ final readonly class ConfigReader
      */
     private function mergeObjects(object $a, object $b): object
     {
-        if (!is_a($b, $a::class)) {
+        if ($a::class !== $b::class) {
             throw new Exception\ObjectsAreIncompatible($a, $b);
         }
 
-        $reflection = new ReflectionObject($b);
+        $reflection = new ReflectionClass($a::class);
         $parameters = $reflection->getConstructor()?->getParameters() ?? [];
         $properties = [];
 
@@ -192,7 +191,6 @@ final readonly class ConfigReader
             $properties[] = $aValue;
         }
 
-        /* @phpstan-ignore return.type (Revisit once https://github.com/phpstan/phpstan/issues/15032 is solved) */
         return $reflection->newInstance(...$properties);
     }
 
