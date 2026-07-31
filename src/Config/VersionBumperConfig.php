@@ -24,11 +24,7 @@ declare(strict_types=1);
 namespace EliasHaeussler\VersionBumper\Config;
 
 use EliasHaeussler\VersionBumper\Version;
-use ReflectionObject;
 use Symfony\Component\Filesystem;
-
-use function array_merge;
-use function is_array;
 
 /**
  * VersionBumperConfig.
@@ -109,38 +105,6 @@ final class VersionBumperConfig
     public function versionRangeIndicators(): array
     {
         return $this->versionRangeIndicators;
-    }
-
-    /**
-     * @impure
-     *
-     * @internal
-     */
-    public function merge(self $other): self
-    {
-        $shell = new self();
-        $reflection = new ReflectionObject($other);
-        $parameters = $reflection->getConstructor()?->getParameters() ?? [];
-        $properties = [];
-
-        foreach ($parameters as $parameter) {
-            $property = $reflection->getProperty($parameter->getName());
-            $thisValue = $property->getValue($this);
-            $otherValue = $property->getValue($other);
-
-            /* @phpstan-ignore notEqual.notAllowed (Loose comparison is intended as we compare objects) */
-            if ($property->getValue($shell) != $otherValue) {
-                $thisValue = is_array($thisValue) && is_array($otherValue)
-                    ? array_merge($thisValue, $otherValue)
-                    : $otherValue
-                ;
-            }
-
-            $properties[] = $thisValue;
-        }
-
-        /* @phpstan-ignore argument.type */
-        return new self(...$properties);
     }
 
     private function resolveWildcardsInFiles(): void
