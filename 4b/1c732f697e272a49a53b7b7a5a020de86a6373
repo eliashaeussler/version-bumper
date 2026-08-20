@@ -1,0 +1,14 @@
+res/version-bumper.schema.json
+  h_a1c258d8beeba3 230-231
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "4b1c732f697e272a49a53b7b7a5a020de86a6373",
+  "prompts": {},
+  "humans": {
+    "h_a1c258d8beeba3": {
+      "author": "Elias Häußler <elias@haeussler.dev>"
+    }
+  }
+}
