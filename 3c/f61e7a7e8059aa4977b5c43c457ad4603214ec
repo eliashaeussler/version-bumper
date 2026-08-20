@@ -1,0 +1,14 @@
+docs/version-range.md
+  h_a1c258d8beeba3 3-4,6-13,15,22
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "3cf61e7a7e8059aa4977b5c43c457ad4603214ec",
+  "prompts": {},
+  "humans": {
+    "h_a1c258d8beeba3": {
+      "author": "Elias Häußler <elias@haeussler.dev>"
+    }
+  }
+}
