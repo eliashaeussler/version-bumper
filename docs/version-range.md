@@ -6,6 +6,19 @@
 > number (`0.1.2` → `0.2.0`) and bumping minor version
 > increases the third version number (`0.1.2` → `0.1.3`).
 
+## Bumping to the first stable release
+
+The `major` range cannot produce `1.0.0` from an unstable version, since it
+increases the second digit (`0.5.0` → `0.6.0`). Pass the target version
+explicitly instead:
+
+```bash
+composer bump-version 1.0.0 --release
+```
+
+Version range auto-detection cannot produce `1.0.0` either, as it always
+resolves to a version range.
+
 ## Auto-detection
 
 Normally, an explicit version range or version is passed to
