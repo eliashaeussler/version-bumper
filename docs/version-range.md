@@ -1,10 +1,29 @@
 # Version range
 
+## Stable vs. unstable versions
+
 > [!IMPORTANT]
-> Unstable versions (< `1.0.0`) are handled differently.
-> Bumping major version increases the second version
-> number (`0.1.2` → `0.2.0`) and bumping minor version
-> increases the third version number (`0.1.2` → `0.1.3`).
+> Unstable versions (< `1.0.0`) are handled differently than stable
+> ones (>= `1.0.0`).
+
+### Bumping unstable versions
+
+Bumping an unstable major version increases the second version number
+(`0.1.2` → `0.2.0`) and bumping an unstable minor version increases the
+third version number (`0.1.2` → `0.1.3`).
+
+### Bumping to the first stable release
+
+The `major` range cannot produce `1.0.0` from an unstable version, since it
+increases the second digit (`0.5.0` → `0.6.0`). Pass the target version
+explicitly instead:
+
+```bash
+composer bump-version 1.0.0
+```
+
+Version range auto-detection cannot produce `1.0.0` either, as it always
+resolves to a version range.
 
 ## Auto-detection
 
