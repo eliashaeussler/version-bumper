@@ -1,0 +1,29 @@
+{
+	"filesToModify": [
+		{
+			"path": "foo",
+			"patterns": [
+				"baz: {%version%}",
+				"foo: {%version%}"
+			],
+			"reportUnmatched": true
+		},
+		{
+			"path": "baz",
+			"patterns": [
+				"baz: {%version%}",
+				"foo: {%version%}"
+			]
+		},
+		{
+			"path": "foobaz",
+			"patterns": [
+				"foo: {%version%}"
+			]
+		}
+	],
+	"releaseOptions": {
+		"createTag": false
+	},
+	"rootPath": "../RootPath"
+}

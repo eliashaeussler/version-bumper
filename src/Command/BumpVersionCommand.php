@@ -547,7 +547,9 @@ final class BumpVersionCommand extends Command\BaseCommand
             $releaseInformation[] = sprintf('Commit hash: <info>%s</info>', $result->commitId());
         }
 
-        $releaseInformation[] = sprintf('Tagged: <info>%s</info>', $result->tagName());
+        if (null !== $result->tagName()) {
+            $releaseInformation[] = sprintf('Tagged: <info>%s</info>', $result->tagName());
+        }
 
         $this->io->listing($releaseInformation);
     }

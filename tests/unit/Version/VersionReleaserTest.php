@@ -420,6 +420,34 @@ TAGS;
     }
 
     #[Framework\Attributes\Test]
+    public function releaseSkipsTagCreationAndExistenceCheckIfCreateTagIsDisabled(): void
+    {
+        $this->caller
+            ->addResult("add '--all' 'composer.json'", '')
+            ->addResult("commit '-m' 'Release 2.0.0'", '')
+            ->addResult("show '-s' '--pretty=raw' '--no-color' 'HEAD'", 'commit cf79760440d4a34c85cf9ceeefbf2140fad04eb1')
+        ;
+
+        $expected = new Src\Result\VersionReleaseResult(
+            [
+                $this->results[0]->file(),
+            ],
+            null,
+            'Release 2.0.0',
+            'cf79760440d4a34c85cf9ceeefbf2140fad04eb1',
+        );
+
+        self::assertEquals(
+            $expected,
+            $this->subject->release(
+                $this->results,
+                dirname(__DIR__, 3),
+                new Src\Config\ReleaseOptions(createTag: false),
+            ),
+        );
+    }
+
+    #[Framework\Attributes\Test]
     public function releaseDoesNotPerformAnyWriteOperationsInDryRunMode(): void
     {
         $this->caller->addResult('tag', '');

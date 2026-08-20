@@ -77,22 +77,26 @@ final readonly class VersionReleaser
         }
 
         $modifiedFiles = $this->extractModifiedFilesFromResults($results);
-        $tagName = Helper\VersionHelper::replaceVersionInPattern($options->tagName(), $version);
+        $tagName = null;
 
-        // Check if tag already exists
-        if (null !== $repository->getTag($tagName)) {
-            if (!$options->overwriteExistingTag()) {
-                throw new Exception\TagAlreadyExists($tagName);
-            }
+        if ($options->createTag()) {
+            $tagName = Helper\VersionHelper::replaceVersionInPattern($options->tagName(), $version);
 
-            if (!$dryRun) {
-                $repository->deleteTag($tagName);
+            // Check if tag already exists
+            if (null !== $repository->getTag($tagName)) {
+                if (!$options->overwriteExistingTag()) {
+                    throw new Exception\TagAlreadyExists($tagName);
+                }
+
+                if (!$dryRun) {
+                    $repository->deleteTag($tagName);
+                }
             }
         }
 
         [$commitMessage, $commitId] = $this->commitModifiedFiles($modifiedFiles, $repository, $options, $version, $dryRun);
 
-        if (!$dryRun) {
+        if ($options->createTag() && !$dryRun) {
             $tagCommand = Command\TagCommand::getInstance($repository)->create($tagName, null, $tagName);
 
             if ($options->signTag()) {

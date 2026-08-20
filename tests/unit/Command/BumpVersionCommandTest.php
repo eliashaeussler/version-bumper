@@ -660,6 +660,25 @@ final class BumpVersionCommandTest extends Framework\TestCase
     }
 
     #[Framework\Attributes\Test]
+    public function executeDecoratesVersionReleaseResultWithoutTagIfTagCreationIsDisabled(): void
+    {
+        $configFile = dirname(__DIR__).'/Fixtures/ConfigFiles/valid-config-with-root-path-and-no-tag.json';
+
+        $this->commandTester->execute([
+            'range' => '0.1.0',
+            '--config' => $configFile,
+            '--dry-run' => true,
+            '--release' => true,
+        ]);
+
+        $output = $this->commandTester->getDisplay();
+
+        self::assertSame(Console\Command\Command::SUCCESS, $this->commandTester->getStatusCode());
+        self::assertStringContainsString('Committed: Release 0.1.0', $output);
+        self::assertStringNotContainsString('Tagged:', $output);
+    }
+
+    #[Framework\Attributes\Test]
     public function executeFailsIfUnmatchedPatternIsReportedInStrictMode(): void
     {
         $configFile = dirname(__DIR__).'/Fixtures/ConfigFiles/valid-config-with-root-path.json';

@@ -44,4 +44,16 @@ final class ReleaseOptionsTest extends Framework\TestCase
 
         new Src\Config\ReleaseOptions(tagName: 'foo');
     }
+
+    #[Framework\Attributes\Test]
+    public function createTagDefaultsToTrue(): void
+    {
+        self::assertTrue((new Src\Config\ReleaseOptions())->createTag());
+    }
+
+    #[Framework\Attributes\Test]
+    public function createTagReturnsConfiguredValue(): void
+    {
+        self::assertFalse((new Src\Config\ReleaseOptions(createTag: false))->createTag());
+    }
 }

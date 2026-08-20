@@ -23,6 +23,7 @@ filesToModify:
 
 releaseOptions:
   commitMessage: '[RELEASE] Release of my-fancy-library {%version%}'
+  createTag: true
   overwriteExistingTag: true
   signTag: true
   tagName: 'v{%version%}'
@@ -78,6 +79,7 @@ preset identifier only) or using object syntax (provide identifier and options).
 |---------------------------------------|---------|----------|-------------------------------------------------------------------------------------------------------------------------------------|
 | `releaseOptions`                      | Object  | –        | Set of configuration options to respect when a new release is created (using the `--release` command option).                       |
 | `releaseOptions.commitMessage`        | String  | –        | Commit message pattern to use for new releases. May contain a `{%version%}` placeholder that is replaced by the version to release. |
+| `releaseOptions.createTag`            | Boolean | –        | Create a Git tag for the release. If set to `false`, no Git tag is created and only the release commit is performed. Defaults to `true`. |
 | `releaseOptions.overwriteExistingTag` | Boolean | –        | Overwrite an existing tag by deleting it before a new tag is created.                                                               |
 | `releaseOptions.signTag`              | Boolean | –        | Use Git's `-s` command option to sign the new tag using the Git-configured signing key.                                             |
 | `releaseOptions.tagName`              | String  | –        | Tag name pattern to use for new releases. Must contain a `{%version%}` placeholder that is replaced by the version to release.      |
