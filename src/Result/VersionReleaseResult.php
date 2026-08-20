@@ -38,7 +38,7 @@ final readonly class VersionReleaseResult
      */
     public function __construct(
         private array $committedFiles,
-        private string $tagName,
+        private ?string $tagName,
         private ?string $commitMessage,
         private ?string $commitId,
     ) {}
@@ -51,7 +51,7 @@ final readonly class VersionReleaseResult
         return $this->committedFiles;
     }
 
-    public function tagName(): string
+    public function tagName(): ?string
     {
         return $this->tagName;
     }

@@ -42,6 +42,7 @@ final readonly class ReleaseOptions
         private string $tagName = '{%version%}',
         private bool $overwriteExistingTag = false,
         private bool $signTag = false,
+        private bool $createTag = true,
     ) {
         if (!Helper\VersionHelper::isValidVersionPattern($this->tagName)) {
             throw new Exception\TagNameIsInvalid($this->tagName);
@@ -66,5 +67,10 @@ final readonly class ReleaseOptions
     public function signTag(): bool
     {
         return $this->signTag;
+    }
+
+    public function createTag(): bool
+    {
+        return $this->createTag;
     }
 }

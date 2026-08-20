@@ -224,6 +224,12 @@
 					"title": "Commit message pattern to use for new releases",
 					"description": "May contain a `{%version%}` placeholder that is replaced by the version to release."
 				},
+				"createTag": {
+					"type": "boolean",
+					"title": "Define whether to create a Git tag for the release",
+					"description": "If set to `false`, no Git tag is created and only the release commit is performed.",
+					"default": true
+				},
 				"overwriteExistingTag": {
 					"type": "boolean",
 					"title": "Define whether existing tags should be overwritten",
