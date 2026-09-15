@@ -1,0 +1,25 @@
+build/checks/composer-dependency-analyser.php
+  h_a1c258d8beeba3 28-29
+composer.json
+  h_a1c258d8beeba3 29
+src/Config/Preset/Typo3ExtensionPreset.php
+  h_a1c258d8beeba3 26,29,32,63-64,71,125,129-147,150-158,161,169,171,185-203
+composer.lock
+  h_a1c258d8beeba3 7
+tests/unit/Config/Preset/Typo3ExtensionPresetTest.php
+  h_a1c258d8beeba3 172-211
+  h_a1c258d8beeba3 171
+tests/unit/Fixtures/RootPathMissingExtEmConf/composer.json
+  h_a1c258d8beeba3 1-5
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "6c1d913f09cf4e814040eae01facf5f76739af22",
+  "prompts": {},
+  "humans": {
+    "h_a1c258d8beeba3": {
+      "author": "Elias Häußler <elias@haeussler.dev>"
+    }
+  }
+}
