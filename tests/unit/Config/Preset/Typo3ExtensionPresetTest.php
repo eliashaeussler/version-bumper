@@ -169,6 +169,47 @@ final class Typo3ExtensionPresetTest extends Framework\TestCase
     }
 
     #[Framework\Attributes\Test]
+    public function getConfigDoesNotReportMissingExtEmConfFileOnModernTypo3Versions(): void
+    {
+        $rootPath = dirname(__DIR__, 2).'/Fixtures/RootPathMissingExtEmConf';
+        $rootConfig = new Src\Config\VersionBumperConfig(rootPath: $rootPath);
+
+        $expected = new Src\Config\VersionBumperConfig(
+            filesToModify: [
+                new Src\Config\FileToModify(
+                    'ext_emconf.php',
+                    [
+                        new Src\Config\FilePattern("'version' => '{%version%}'"),
+                    ],
+                    true,
+                    false,
+                ),
+                new Src\Config\FileToModify(
+                    'composer.json',
+                    [
+                        new Src\Config\FilePattern('"version": "{%version%}'),
+                    ],
+                    true,
+                    true,
+                    [],
+                    [
+                        new Src\Version\Action\ComposerLockAction(),
+                    ],
+                ),
+                new Src\Config\FileToModify(
+                    'Documentation/guides.xml',
+                    [
+                        new Src\Config\FilePattern('release="{%version%}"'),
+                    ],
+                    true,
+                ),
+            ],
+        );
+
+        self::assertEquals($expected, $this->subject->getConfig($rootConfig));
+    }
+
+    #[Framework\Attributes\Test]
     public function getConfigDoesNotReportUnmatchedVersionInComposerJsonIfExtEmConfFileExists(): void
     {
         $rootPath = dirname(__DIR__, 2).'/Fixtures/RootPathMissingComposerVersion';
