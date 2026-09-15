@@ -1,0 +1,15 @@
+composer.json
+  h_a1c258d8beeba3 109-110,112
+  h_a1c258d8beeba3 111
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "7321440a501abb229978a28485221b89c60c65fe",
+  "prompts": {},
+  "humans": {
+    "h_a1c258d8beeba3": {
+      "author": "Elias Häußler <elias@haeussler.dev>"
+    }
+  }
+}
