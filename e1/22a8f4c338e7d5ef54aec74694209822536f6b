@@ -1,0 +1,20 @@
+src/Config/Preset/Typo3ExtensionPreset.php
+  h_a1c258d8beeba3 28,31,68,188-221
+composer.json
+  h_a1c258d8beeba3 29
+build/checks/composer-dependency-analyser.php
+  h_a1c258d8beeba3 28-29
+composer.lock
+  h_a1c258d8beeba3 7
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "e122a8f4c338e7d5ef54aec74694209822536f6b",
+  "prompts": {},
+  "humans": {
+    "h_a1c258d8beeba3": {
+      "author": "Elias Häußler <elias@haeussler.dev>"
+    }
+  }
+}
