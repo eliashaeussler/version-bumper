@@ -1,0 +1,14 @@
+composer.lock
+  h_a1c258d8beeba3 4928,4932,4936-4937,4942,4950-4952,4976,4984
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "16408528527cb7a1f02fc6fed9566c22f492b2a3",
+  "prompts": {},
+  "humans": {
+    "h_a1c258d8beeba3": {
+      "author": "Elias Häußler <elias@haeussler.dev>"
+    }
+  }
+}
