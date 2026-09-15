@@ -106,7 +106,10 @@
 			"@refactor:php"
 		],
 		"refactor:php": "rector process -c build/checks/rector.php",
-		"test": "@test:coverage --no-coverage",
+		"test": [
+			"find ./tests/unit/Fixtures -type d -name vendor -print0 | xargs -0 -I{} rm -rf {} @no_additional_args",
+			"@test:coverage --no-coverage"
+		],
 		"test:coverage": "phpunit -c build/tests/phpunit.xml"
 	}
 }
