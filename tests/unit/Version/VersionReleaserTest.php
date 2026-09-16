@@ -385,18 +385,8 @@ final class VersionReleaserTest extends Framework\TestCase
 1.2.0
 TAGS;
 
-        $commit = (string) file_get_contents(dirname(__DIR__).'/Fixtures/Git/log-commit.txt');
-        $tag = (string) file_get_contents(dirname(__DIR__).'/Fixtures/Git/show-tag.txt');
-        $diff = (string) file_get_contents(dirname(__DIR__).'/Fixtures/Git/diff-tag-added.txt');
-
         $this->caller
-            ->addResult('tag', $tags)
-            ->addResult('tag', $tags)
-            ->addResult("rev-list '-n1' 'refs/tags/1.0.0'", '08708bc0b5c07a8233b6510c4677ad3ad112d5d4')
-            ->addResult('tag', $tags)
-            ->addResult("rev-list '-n1' 'refs/tags/1.0.1'", '08708bc0b5c07a8233b6510c4677ad3ad112d5d4')
-            ->addResult('tag', $tags)
-            ->addResult("rev-list '-n1' 'refs/tags/1.1.0'", '08708bc0b5c07a8233b6510c4677ad3ad112d5d4')
+            ->addResult("describe '--tags' '--abbrev=0' 'HEAD'", '1.2.0')
             ->addResult('tag', $tags)
             ->addResult("rev-list '-n1' 'refs/tags/1.2.0'", '08708bc0b5c07a8233b6510c4677ad3ad112d5d4')
             ->addResult('tag', $tags)

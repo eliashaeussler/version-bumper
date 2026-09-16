@@ -50,7 +50,7 @@ final readonly class VersionReleaser
      * @param list<Result\VersionBumpResult> $results
      *
      * @throws Exception\AmbiguousVersionsDetected
-     * @throws Exception\CannotFetchLatestGitTag
+     * @throws Exception\CannotFetchLastGitTag
      * @throws Exception\CouldNotCreateGitTag
      * @throws Exception\TagAlreadyExists
      * @throws Exception\TargetVersionIsMissing
@@ -177,7 +177,7 @@ final readonly class VersionReleaser
     }
 
     /**
-     * @throws Exception\CannotFetchLatestGitTag
+     * @throws Exception\CannotFetchLastGitTag
      * @throws Exception\VersionIsNotSupported
      */
     private function detectVersionFromVersionRange(Enum\VersionRange|string|null $versionRange, Repository $repository): ?Version
@@ -190,7 +190,7 @@ final readonly class VersionReleaser
             return Version::fromFullVersion($versionRange);
         }
 
-        $tag = Helper\GitHelper::fetchLatestVersionTag($repository);
+        $tag = Helper\GitHelper::fetchLastVersionTag($repository);
 
         if (null === $tag) {
             return null;

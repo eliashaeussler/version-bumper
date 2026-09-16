@@ -21,26 +21,24 @@ declare(strict_types=1);
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-namespace EliasHaeussler\VersionBumper\Tests\Exception;
+namespace EliasHaeussler\VersionBumper\Exception;
 
-use EliasHaeussler\VersionBumper as Src;
-use PHPUnit\Framework;
+use Throwable;
 
 /**
- * CannotFetchLatestGitTagTest.
+ * CannotFetchLastGitTag.
  *
  * @author Elias Häußler <elias@haeussler.dev>
  * @license GPL-3.0-or-later
  */
-#[Framework\Attributes\CoversClass(Src\Exception\CannotFetchLatestGitTag::class)]
-final class CannotFetchLatestGitTagTest extends Framework\TestCase
+final class CannotFetchLastGitTag extends Exception
 {
-    #[Framework\Attributes\Test]
-    public function constructorCreatesException(): void
+    public function __construct(?Throwable $previous = null)
     {
-        $actual = new Src\Exception\CannotFetchLatestGitTag();
-
-        self::assertSame('Unable to fetch latest Git tag from repository.', $actual->getMessage());
-        self::assertSame(1731357818, $actual->getCode());
+        parent::__construct(
+            'Unable to fetch last Git tag from repository.',
+            1731357818,
+            $previous,
+        );
     }
 }
