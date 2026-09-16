@@ -54,7 +54,7 @@ final readonly class VersionRangeDetector
      *
      * @throws Exception\CannotFetchGitCommits
      * @throws Exception\CannotFetchGitTag
-     * @throws Exception\CannotFetchLatestGitTag
+     * @throws Exception\CannotFetchLastGitTag
      * @throws Exception\GitTagDoesNotExist
      * @throws Exception\NoGitTagsFound
      * @throws Exception\VersionIsNotSupported
@@ -73,7 +73,7 @@ final readonly class VersionRangeDetector
         if (null !== $since) {
             $tag = Helper\GitHelper::fetchTag($since, $repository) ?? throw new Exception\GitTagDoesNotExist($since);
         } else {
-            $tag = Helper\GitHelper::fetchLatestVersionTag($repository) ?? throw new Exception\NoGitTagsFound();
+            $tag = Helper\GitHelper::fetchLastVersionTag($repository) ?? throw new Exception\NoGitTagsFound();
         }
 
         // Fetch relevant Git information

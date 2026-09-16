@@ -70,12 +70,12 @@ final class VersionRangeDetectorTest extends Framework\TestCase
     }
 
     #[Framework\Attributes\Test]
-    public function detectThrowsExceptionIfLatestVersionTagCannotBeRead(): void
+    public function detectThrowsExceptionIfLastVersionTagCannotBeRead(): void
     {
-        $this->caller->addResult('tag', new Exception('something went wrong'));
+        $this->caller->addResult("describe '--tags' '--abbrev=0' 'HEAD'", new Exception('something went wrong'));
 
         $this->expectExceptionObject(
-            new Src\Exception\CannotFetchLatestGitTag(),
+            new Src\Exception\CannotFetchLastGitTag(),
         );
 
         $this->subject->detect(__DIR__, []);
@@ -84,7 +84,7 @@ final class VersionRangeDetectorTest extends Framework\TestCase
     #[Framework\Attributes\Test]
     public function detectThrowsExceptionIfNoTagsAreAvailable(): void
     {
-        $this->caller->addResult('tag', '');
+        $this->caller->addResult("describe '--tags' '--abbrev=0' 'HEAD'", '');
 
         $this->expectExceptionObject(
             new Src\Exception\NoGitTagsFound(),
@@ -97,9 +97,8 @@ final class VersionRangeDetectorTest extends Framework\TestCase
     public function detectThrowsExceptionIfNoVersionTagsAreAvailable(): void
     {
         $this->caller
-            ->addResult('tag', 'foo')
-            ->addResult('tag', 'foo')
-            ->addResult("rev-list '-n1' 'refs/tags/foo'", '08708bc0b5c07a8233b6510c4677ad3ad112d5d4')
+            ->addResult("describe '--tags' '--abbrev=0' 'HEAD'", 'foo')
+            ->addResult("describe '--tags' '--abbrev=0' 'foo^'", '')
         ;
 
         $this->expectExceptionObject(
@@ -311,7 +310,7 @@ final class VersionRangeDetectorTest extends Framework\TestCase
     }
 
     #[Framework\Attributes\Test]
-    public function detectReturnsAutoDetectedVersionRangeForLatestVersionTag(): void
+    public function detectReturnsAutoDetectedVersionRangeForLastVersionTag(): void
     {
         $indicators = [
             new Src\Config\VersionRangeIndicator(
@@ -337,13 +336,7 @@ TAGS;
         $diff = (string) file_get_contents(dirname(__DIR__).'/Fixtures/Git/diff-tag-added.txt');
 
         $this->caller
-            ->addResult('tag', $tags)
-            ->addResult('tag', $tags)
-            ->addResult("rev-list '-n1' 'refs/tags/1.0.0'", '08708bc0b5c07a8233b6510c4677ad3ad112d5d4')
-            ->addResult('tag', $tags)
-            ->addResult("rev-list '-n1' 'refs/tags/1.0.1'", '08708bc0b5c07a8233b6510c4677ad3ad112d5d4')
-            ->addResult('tag', $tags)
-            ->addResult("rev-list '-n1' 'refs/tags/1.1.0'", '08708bc0b5c07a8233b6510c4677ad3ad112d5d4')
+            ->addResult("describe '--tags' '--abbrev=0' 'HEAD'", '1.2.0')
             ->addResult('tag', $tags)
             ->addResult("rev-list '-n1' 'refs/tags/1.2.0'", '08708bc0b5c07a8233b6510c4677ad3ad112d5d4')
             ->addResult("log '-s' '--pretty=raw' '--no-color' '--max-count=-1' '--skip=0' 'refs/tags/1.2.0..HEAD'", $commit)

@@ -24,9 +24,11 @@ declare(strict_types=1);
 namespace EliasHaeussler\VersionBumper\Helper;
 
 use EliasHaeussler\VersionBumper\Exception;
-use EliasHaeussler\VersionBumper\Version;
+use EliasHaeussler\VersionBumper\Git\DescribeCommand;
 use GitElephant\Objects;
 use GitElephant\Repository;
+
+use function trim;
 
 /**
  * GitHelper.
@@ -49,40 +51,34 @@ final class GitHelper
     }
 
     /**
-     * @throws Exception\CannotFetchLatestGitTag
-     * @throws Exception\VersionIsNotSupported
+     * @throws Exception\CannotFetchLastGitTag
      */
-    public static function fetchLatestVersionTag(Repository $repository): ?Objects\Tag
+    public static function fetchLastVersionTag(Repository $repository): ?Objects\Tag
     {
-        try {
-            /** @var list<Objects\Tag> $tags */
-            $tags = $repository->getTags();
-        } catch (\Exception $exception) {
-            throw new Exception\CannotFetchLatestGitTag($exception);
+        $ref = 'HEAD';
+
+        while (true) {
+            try {
+                $repository->getCaller()->execute(DescribeCommand::getInstance($repository)->lastTag($ref));
+            } catch (\Exception $exception) {
+                throw new Exception\CannotFetchLastGitTag($exception);
+            }
+
+            $tag = trim($repository->getCaller()->getOutput());
+
+            if ('' === $tag) {
+                break;
+            }
+
+            if (VersionHelper::isValidVersion($tag)) {
+                /* @phpstan-ignore method.internal (for the time being, resolved by https://github.com/matteosister/GitElephant/pull/191) */
+                return new Objects\Tag($repository, $tag);
+            }
+
+            // Test with previous tag
+            $ref = $tag.'^';
         }
 
-        // Drop all non-version tags
-        $tags = array_filter(
-            $tags,
-            static fn (Objects\Tag $tag) => VersionHelper::isValidVersion($tag->getName()),
-        );
-
-        // Early return if no version tags are left
-        if ([] === $tags) {
-            return null;
-        }
-
-        // Sort version tags by descending version number
-        usort(
-            $tags,
-            static function (Objects\Tag $a, Objects\Tag $b) {
-                $a = Version\Version::fromFullVersion($a->getName());
-                $b = Version\Version::fromFullVersion($b->getName());
-
-                return version_compare($a->full(), $b->full());
-            },
-        );
-
-        return array_pop($tags);
+        return null;
     }
 }

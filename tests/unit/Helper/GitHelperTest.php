@@ -92,35 +92,36 @@ final class GitHelperTest extends Framework\TestCase
     }
 
     #[Framework\Attributes\Test]
-    public function fetchLatestVersionTagThrowsExceptionIfGitTagsCannotBeFetched(): void
+    public function fetchLastVersionTagThrowsExceptionIfGitTagsCannotBeFetched(): void
     {
         $exception = new Exception('something went wrong');
 
-        $this->caller->addResult('tag', $exception);
+        $this->caller->addResult("describe '--tags' '--abbrev=0' 'HEAD'", $exception);
 
         $this->expectExceptionObject(
-            new Src\Exception\CannotFetchLatestGitTag($exception),
+            new Src\Exception\CannotFetchLastGitTag($exception),
         );
 
-        Src\Helper\GitHelper::fetchLatestVersionTag($this->repository);
+        Src\Helper\GitHelper::fetchLastVersionTag($this->repository);
     }
 
     #[Framework\Attributes\Test]
-    public function fetchLatestVersionTagReturnsNullIfNoTagsAreAvailable(): void
+    public function fetchLastVersionTagReturnsNullIfNoTagsAreAvailable(): void
     {
-        $this->caller->addResult('tag', '');
+        $this->caller->addResult("describe '--tags' '--abbrev=0' 'HEAD'", '');
 
-        self::assertNull(Src\Helper\GitHelper::fetchLatestVersionTag($this->repository));
+        self::assertNull(Src\Helper\GitHelper::fetchLastVersionTag($this->repository));
     }
 
     #[Framework\Attributes\Test]
-    public function fetchLatestVersionTagReturnsLatestVersionTag(): void
+    public function fetchLastVersionTagReturnsLastVersionTag(): void
     {
         $tags = <<<TAGS
 1.0.0
 1.0.1
 1.1.0
 1.2.0
+foo
 TAGS;
 
         $commit = (string) file_get_contents(dirname(__DIR__).'/Fixtures/Git/log-commit.txt');
@@ -128,13 +129,8 @@ TAGS;
         $diff = (string) file_get_contents(dirname(__DIR__).'/Fixtures/Git/diff-tag-added.txt');
 
         $this->caller
-            ->addResult('tag', $tags)
-            ->addResult('tag', $tags)
-            ->addResult("rev-list '-n1' 'refs/tags/1.0.0'", '08708bc0b5c07a8233b6510c4677ad3ad112d5d4')
-            ->addResult('tag', $tags)
-            ->addResult("rev-list '-n1' 'refs/tags/1.0.1'", '08708bc0b5c07a8233b6510c4677ad3ad112d5d4')
-            ->addResult('tag', $tags)
-            ->addResult("rev-list '-n1' 'refs/tags/1.1.0'", '08708bc0b5c07a8233b6510c4677ad3ad112d5d4')
+            ->addResult("describe '--tags' '--abbrev=0' 'HEAD'", 'foo')
+            ->addResult("describe '--tags' '--abbrev=0' 'foo^'", '1.2.0')
             ->addResult('tag', $tags)
             ->addResult("rev-list '-n1' 'refs/tags/1.2.0'", '08708bc0b5c07a8233b6510c4677ad3ad112d5d4')
             ->addResult("log '-s' '--pretty=raw' '--no-color' '--max-count=-1' '--skip=0' 'refs/tags/1.2.0..HEAD'", $commit)
@@ -142,7 +138,7 @@ TAGS;
             ->addResult("diff '--full-index' '--no-color' '--no-ext-diff' '-M' '--dst-prefix=DST/' '--src-prefix=SRC/' '08708bc0b5c07a8233b6510c4677ad3ad112d5d4^..08708bc0b5c07a8233b6510c4677ad3ad112d5d4'", $diff)
         ;
 
-        self::assertSame('1.2.0', Src\Helper\GitHelper::fetchLatestVersionTag($this->repository)?->getName());
+        self::assertSame('1.2.0', Src\Helper\GitHelper::fetchLastVersionTag($this->repository)?->getName());
     }
 
     protected function tearDown(): void
