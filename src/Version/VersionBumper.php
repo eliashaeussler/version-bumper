@@ -28,6 +28,7 @@ use EliasHaeussler\VersionBumper\Enum;
 use EliasHaeussler\VersionBumper\Exception;
 use EliasHaeussler\VersionBumper\Result;
 
+use function array_reverse;
 use function file_put_contents;
 use function is_file;
 use function preg_match_all;
@@ -108,8 +109,8 @@ final readonly class VersionBumper
         $operations = [];
 
         foreach ($file->patterns() as $pattern) {
-            if (preg_match_all($pattern->regularExpression(), $contents, $matches, PREG_OFFSET_CAPTURE | PREG_SET_ORDER) > 0) {
-                foreach ($matches as ['version' => [$fullVersion, $offset]]) {
+            if (preg_match_all($pattern->regularExpression(), $modified, $matches, PREG_OFFSET_CAPTURE | PREG_SET_ORDER) > 0) {
+                foreach (array_reverse($matches) as ['version' => [$fullVersion, $offset]]) {
                     $operation = $this->buildWriteOperation(
                         Version::fromFullVersion($fullVersion),
                         $versionRange,

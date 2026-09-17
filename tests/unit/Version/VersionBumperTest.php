@@ -197,8 +197,8 @@ FOO,
                 new Src\Version\Version(1, 0, 0),
                 new Src\Version\Version(1, 1, 0),
                 <<<FOO
-baz: 1.1.0
 baz: 1.0.0
+baz: 1.1.0
 
 FOO,
                 new Src\Config\FilePattern('baz: {%version%}'),
@@ -236,22 +236,22 @@ FOO,
 
         $expected = [
             new Src\Result\WriteOperation(
-                new Src\Version\Version(2, 0, 0),
-                new Src\Version\Version(2, 1, 0),
+                new Src\Version\Version(2, 9, 0),
+                new Src\Version\Version(2, 10, 0),
                 <<<BAZ
-foo: 2.1.0
-baz: 3.0.0
+foo: 2.10.0
+baz: 3.9.0
 
 BAZ,
                 new Src\Config\FilePattern('foo: {%version%}'),
                 Src\Enum\OperationState::Modified,
             ),
             new Src\Result\WriteOperation(
-                new Src\Version\Version(3, 0, 0),
-                new Src\Version\Version(3, 1, 0),
+                new Src\Version\Version(3, 9, 0),
+                new Src\Version\Version(3, 10, 0),
                 <<<BAZ
-foo: 2.1.0
-baz: 3.1.0
+foo: 2.10.0
+baz: 3.10.0
 
 BAZ,
                 new Src\Config\FilePattern('baz: {%version%}'),
