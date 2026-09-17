@@ -1,0 +1,20 @@
+tests/unit/Fixtures/RootPath/baz
+  h_a1c258d8beeba3 1-2
+tests/unit/Command/BumpVersionCommandTest.php
+  h_a1c258d8beeba3 697-698
+src/Version/VersionBumper.php
+  h_a1c258d8beeba3 31,112-113
+tests/unit/Version/VersionBumperTest.php
+  h_a1c258d8beeba3 201,239-240,242-243,250-251,253-254
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "611b311634d1d3357f6f89954debe6808ef8f12c",
+  "prompts": {},
+  "humans": {
+    "h_a1c258d8beeba3": {
+      "author": "Elias Häußler <elias@haeussler.dev>"
+    }
+  }
+}
