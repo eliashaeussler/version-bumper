@@ -694,7 +694,8 @@ final class BumpVersionCommandTest extends Framework\TestCase
 
         self::assertSame(Console\Command\Command::FAILURE, $this->commandTester->getStatusCode());
         self::assertStringContainsString('Unmatched file pattern: foo: {%version%}', $output);
-        self::assertStringContainsString('Bumped version from "2.0.0" to "1.0.0"', $output);
+        self::assertStringContainsString('Bumped version from "2.9.0" to "1.0.0"', $output);
+        self::assertStringContainsString('Bumped version from "3.9.0" to "1.0.0"', $output);
     }
 
     protected function tearDown(): void
