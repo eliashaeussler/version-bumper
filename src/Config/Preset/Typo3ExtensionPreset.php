@@ -23,10 +23,13 @@ declare(strict_types=1);
 
 namespace EliasHaeussler\VersionBumper\Config\Preset;
 
+use Composer\Composer;
 use Composer\Factory;
 use Composer\IO;
+use Composer\Semver;
 use EliasHaeussler\VersionBumper\Config;
 use EliasHaeussler\VersionBumper\Version;
+use Symfony\Component\Filesystem;
 use Symfony\Component\OptionsResolver;
 use Throwable;
 
@@ -57,12 +60,15 @@ final class Typo3ExtensionPreset extends BasePreset
     {
         $reportMissingDocsFile = self::AUTO_KEYWORD !== $this->options['documentation'];
         $reportUnmatchedComposerVersion = true;
+        $composer = $this->createComposerInstance($rootConfig?->rootPath());
+
         $extEmConf = new Config\FileToModify(
             'ext_emconf.php',
             [
                 new Config\FilePattern("'version' => '{%version%}'"),
             ],
             true,
+            $this->requiresExtEmConfFile($composer),
         );
 
         // Don't report missing version pattern in composer.json file if an ext_emconf.php file
@@ -116,22 +122,43 @@ final class Typo3ExtensionPreset extends BasePreset
 
         return new Config\VersionBumperConfig(
             filesToModify: $filesToModify,
-            releaseOptions: $this->buildReleaseOptions($composerJson, $rootConfig) ?? new Config\ReleaseOptions(),
+            releaseOptions: $this->buildReleaseOptions($composer),
         );
     }
 
-    private function buildReleaseOptions(
-        Config\FileToModify $composerJson,
-        ?Config\VersionBumperConfig $rootConfig,
-    ): ?Config\ReleaseOptions {
-        if (null === $rootConfig || null === $rootConfig->rootPath()) {
-            return null;
+    private function requiresExtEmConfFile(?Composer $composer): bool
+    {
+        // Safety net: If we cannot lookup dependencies due to missing Composer instance,
+        // we better assume legacy TYPO3 versions are still supported instead of potentially breaking
+        // things by assuming we have TYPO3 v14.3 only.
+        if (null === $composer) {
+            return true;
         }
 
-        $extensionKey = $this->extractExtensionKeyFromComposerJson($composerJson->fullPath($rootConfig->rootPath()));
+        $requirements = $composer->getPackage()->getRequires();
+        // @todo Replace with actual patch version, which depends on
+        //       https://review.typo3.org/c/Packages/TYPO3.CMS/+/95815
+        //       being merged and released (wait for v14 release!)
+        $typo3Constraint = new Semver\Constraint\Constraint('<', '14.3.8');
+
+        foreach (['typo3/cms-core', 'typo3/cms', 'typo3/minimal'] as $packageName) {
+            if (array_key_exists($packageName, $requirements)) {
+                return $requirements[$packageName]->getConstraint()->matches($typo3Constraint);
+            }
+        }
+
+        // Safety net: If we cannot determine the installed TYPO3 version from declared dependencies,
+        // we better assume legacy TYPO3 versions are still supported instead of potentially breaking
+        // things by assuming we have TYPO3 v14.3 only.
+        return true;
+    }
+
+    private function buildReleaseOptions(?Composer $composer): Config\ReleaseOptions
+    {
+        $extensionKey = $this->extractExtensionKeyFromComposerJson($composer);
 
         if (null === $extensionKey) {
-            return null;
+            return new Config\ReleaseOptions();
         }
 
         return new Config\ReleaseOptions(
@@ -139,16 +166,9 @@ final class Typo3ExtensionPreset extends BasePreset
         );
     }
 
-    private function extractExtensionKeyFromComposerJson(string $path): ?string
+    private function extractExtensionKeyFromComposerJson(?Composer $composer): ?string
     {
-        if (!is_file($path)) {
-            return null;
-        }
-
-        // Build Composer instance
-        try {
-            $composer = Factory::create(new IO\NullIO(), $path, true, true);
-        } catch (Throwable) {
+        if (null === $composer) {
             return null;
         }
 
@@ -160,6 +180,25 @@ final class Typo3ExtensionPreset extends BasePreset
         }
 
         return $extensionKey;
+    }
+
+    private function createComposerInstance(?string $rootPath): ?Composer
+    {
+        if (null === $rootPath) {
+            return null;
+        }
+
+        $composerJson = Filesystem\Path::join($rootPath, 'composer.json');
+
+        if (!is_file($composerJson)) {
+            return null;
+        }
+
+        try {
+            return Factory::create(new IO\NullIO(), $composerJson, true, true);
+        } catch (Throwable) {
+            return null;
+        }
     }
 
     public static function getIdentifier(): string
