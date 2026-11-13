@@ -15,7 +15,7 @@
 		"php": "~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0",
 		"composer-plugin-api": "^2.0",
 		"cuyz/valinor": "^2.0",
-		"cypresslab/gitelephant": "^4.5",
+		"cypresslab/gitelephant": "^5.0",
 		"eliashaeussler/task-runner": "^1.2",
 		"symfony/console": "^5.4 || ^6.4 || ^7.0 || ^8.0",
 		"symfony/filesystem": "^5.4 || ^6.4 || ^7.0 || ^8.0",
