@@ -163,9 +163,7 @@ final readonly class VersionReleaser
                     continue;
                 }
 
-                if (null === $version) {
-                    $version = $targetVersion;
-                }
+                $version ??= $targetVersion;
 
                 if ($targetVersion->full() !== $version->full()) {
                     throw new Exception\AmbiguousVersionsDetected();

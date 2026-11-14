@@ -87,10 +87,7 @@ final class VersionBumpResult
                 null !== $operation->pattern() ? $operation->pattern()->original() : '',
             ]);
 
-            if (!isset($operations[$identifier])) {
-                $operations[$identifier] = [];
-            }
-
+            $operations[$identifier] ??= [];
             $operations[$identifier][] = $operation;
         }
 
