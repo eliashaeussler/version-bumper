@@ -1,0 +1,14 @@
+src/Command/BumpVersionCommand.php
+  h_a1c258d8beeba3 592
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "9bfef2039ca22dd38c9ace80166e0a89c72e2836",
+  "prompts": {},
+  "humans": {
+    "h_a1c258d8beeba3": {
+      "author": "Elias Häußler <elias@haeussler.dev>"
+    }
+  }
+}
