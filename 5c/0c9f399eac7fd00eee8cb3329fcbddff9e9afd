@@ -1,0 +1,18 @@
+composer.lock
+  h_a1c258d8beeba3 7,6992
+composer.json
+  h_a1c258d8beeba3 36
+build/checks/rector.php
+  h_a1c258d8beeba3 27,29-38
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "5c0c9f399eac7fd00eee8cb3329fcbddff9e9afd",
+  "prompts": {},
+  "humans": {
+    "h_a1c258d8beeba3": {
+      "author": "Elias Häußler <elias@haeussler.dev>"
+    }
+  }
+}
