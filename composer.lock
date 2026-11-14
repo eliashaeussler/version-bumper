@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "a3698a31e36277972c6d31878994c1b4",
+    "content-hash": "b66e5b2022fd181684cf3ff42cf7af10",
     "packages": [
         {
             "name": "cuyz/valinor",
@@ -91,38 +91,37 @@
         },
         {
             "name": "cypresslab/gitelephant",
-            "version": "v4.6.0",
+            "version": "v5.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/matteosister/GitElephant.git",
-                "reference": "4e546eee4c9ad1e0226054f5756c4ef5217e2929"
+                "reference": "97d57185624d4f9a7c9efe95e0d07bccccb6dd86"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/matteosister/GitElephant/zipball/4e546eee4c9ad1e0226054f5756c4ef5217e2929",
-                "reference": "4e546eee4c9ad1e0226054f5756c4ef5217e2929",
+                "url": "https://api.github.com/repos/matteosister/GitElephant/zipball/97d57185624d4f9a7c9efe95e0d07bccccb6dd86",
+                "reference": "97d57185624d4f9a7c9efe95e0d07bccccb6dd86",
                 "shasum": ""
             },
             "require": {
-                "php": ">=7.2.0",
-                "phpoption/phpoption": "1.*",
-                "symfony/filesystem": ">=3.4",
-                "symfony/finder": ">=3.4",
-                "symfony/process": ">=3.4"
+                "php": ">=8.1",
+                "phpoption/phpoption": "^1.9",
+                "symfony/filesystem": "^6.4 || ^7.0 || ^8.0",
+                "symfony/finder": "^6.4 || ^7.0 || ^8.0",
+                "symfony/process": "^6.4 || ^7.0 || ^8.0"
             },
             "require-dev": {
-                "mockery/mockery": "~1.1",
-                "php": ">=7.2.0",
-                "phpstan/phpstan": "*",
-                "phpstan/phpstan-phpunit": "*",
-                "phpunit/phpunit": "~8.0|~9.0",
-                "rector/rector": "*",
-                "symplify/easy-coding-standard": "*"
+                "mockery/mockery": "^1.6",
+                "phpstan/phpstan": "^2.0",
+                "phpstan/phpstan-phpunit": "^2.0",
+                "phpunit/phpunit": "^10.5 || ^11.0",
+                "rector/rector": "^2.0",
+                "symplify/easy-coding-standard": "^12.0 || ^13.0"
             },
             "type": "library",
             "autoload": {
-                "psr-0": {
-                    "GitElephant": "src/"
+                "psr-4": {
+                    "GitElephant\\": "src/GitElephant/"
                 }
             },
             "notification-url": "https://packagist.org/downloads/",
@@ -142,16 +141,10 @@
             ],
             "support": {
                 "issues": "https://github.com/matteosister/GitElephant/issues",
-                "source": "https://github.com/matteosister/GitElephant/tree/v4.6.0"
+                "source": "https://github.com/matteosister/GitElephant/tree/v5.1.0"
             },
-            "funding": [
-                {
-                    "url": "https://tidelift.com/funding/github/packagist/cypresslab/gitelephant",
-                    "type": "tidelift"
-                }
-            ],
-            "time": "2024-11-26T16:23:11+00:00",
-            "published-time": "2024-11-26T16:24:57+00:00"
+            "time": "2026-10-30T15:09:29+00:00",
+            "published-time": "2026-11-10T15:50:31+00:00"
         },
         {
             "name": "eliashaeussler/task-runner",
