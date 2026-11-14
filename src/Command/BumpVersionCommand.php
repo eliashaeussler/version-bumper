@@ -589,7 +589,7 @@ final class BumpVersionCommand extends Command\BaseCommand
         return null;
     }
 
-    private function collectDeprecations(int $errno, string $errstr): bool
+    protected function collectDeprecations(int $errno, string $errstr): bool
     {
         $deprecationMessage = Error\DeprecationMessage::fromTraceOrMessage($errstr);
         $collected = null !== $deprecationMessage;
