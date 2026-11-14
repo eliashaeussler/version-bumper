@@ -1,0 +1,16 @@
+src/Result/VersionBumpResult.php
+  h_a1c258d8beeba3 90
+src/Version/VersionReleaser.php
+  h_a1c258d8beeba3 166
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "f909c4bf1e85927a15de2c110c5f1d454615ae21",
+  "prompts": {},
+  "humans": {
+    "h_a1c258d8beeba3": {
+      "author": "Elias Häußler <elias@haeussler.dev>"
+    }
+  }
+}
