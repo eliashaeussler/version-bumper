@@ -71,7 +71,6 @@ final class GitHelper
             }
 
             if (VersionHelper::isValidVersion($tag)) {
-                /* @phpstan-ignore method.internal (for the time being, resolved by https://github.com/matteosister/GitElephant/pull/191) */
                 return new Objects\Tag($repository, $tag);
             }
 
