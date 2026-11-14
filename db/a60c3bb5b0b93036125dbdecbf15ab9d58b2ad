@@ -1,0 +1,21 @@
+build/checks/rector.php
+  h_a1c258d8beeba3 29-30,33-38
+  h_a1c258d8beeba3 27,31-32
+composer.json
+  h_a1c258d8beeba3 36
+src/Result/VersionBumpResult.php
+  h_a1c258d8beeba3 90
+src/Version/VersionReleaser.php
+  h_a1c258d8beeba3 166
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "dba60c3bb5b0b93036125dbdecbf15ab9d58b2ad",
+  "prompts": {},
+  "humans": {
+    "h_a1c258d8beeba3": {
+      "author": "Elias Häußler <elias@haeussler.dev>"
+    }
+  }
+}
